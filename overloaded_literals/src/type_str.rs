@@ -1,4 +1,4 @@
-use tlist::{TList, TNil, TCons, Len};
+use tlist::{Len, TCons, TList, TNil};
 
 pub struct Byte<const VAL: u8>;
 
@@ -12,9 +12,7 @@ pub struct Byte<const VAL: u8>;
 // NOTE: Make sure this value is not smaller than the one in `overloaded_literals_macro`
 pub const MAX_STR_LIT_LEN: usize = 32768;
 
-pub trait TypeStr: TList
-{
-
+pub trait TypeStr: TList {
     const LEN: usize;
     const V: [u8; MAX_STR_LIT_LEN];
 
@@ -25,12 +23,9 @@ pub trait TypeStr: TList
     };
 }
 
-impl TypeStr for TNil
-{
+impl TypeStr for TNil {
     const LEN: usize = 0;
-    const V: [u8; MAX_STR_LIT_LEN] = {
-        [0; MAX_STR_LIT_LEN]
-    };
+    const V: [u8; MAX_STR_LIT_LEN] = { [0; MAX_STR_LIT_LEN] };
 }
 
 pub trait ContainsByte {
@@ -41,8 +36,7 @@ impl<const BYTE: u8> ContainsByte for Byte<BYTE> {
 }
 
 use typenum::Unsigned;
-impl<First: ContainsByte, Rest: TypeStr> TypeStr for TCons<First, Rest>
-{
+impl<First: ContainsByte, Rest: TypeStr> TypeStr for TCons<First, Rest> {
     const LEN: usize = Len::<Self>::USIZE;
     const V: [u8; MAX_STR_LIT_LEN] = {
         assert!(Len::<Self>::USIZE <= MAX_STR_LIT_LEN);

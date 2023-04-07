@@ -5,18 +5,15 @@ use generic_array::ArrayLength;
 pub use overloaded_literals_macro::overloaded_literals;
 use type_str::TypeStr;
 
-pub trait FromLiteralStr<TStr: TypeStr>
-{
+pub trait FromLiteralStr<TStr: TypeStr> {
     const VALID_LITERAL: &'static str;
     fn into_self() -> Self;
 }
-
 
 pub trait FromLiteralUnsigned<const LIT: u128> {
     const VALID_LITERAL: u128;
     fn into_self() -> Self;
 }
-
 
 pub trait FromLiteralSigned<const LIT: i128> {
     const VALID_LITERAL: i128;
@@ -29,7 +26,7 @@ pub trait FromLiteralSigned<const LIT: i128> {
 // }
 
 impl<const LIT: u128> FromLiteralUnsigned<LIT> for u8 {
-    const VALID_LITERAL: u128 ={
+    const VALID_LITERAL: u128 = {
         let min = u8::MIN as u128;
         let max = i8::MAX as u128;
         if LIT < min || LIT > max {
@@ -44,7 +41,7 @@ impl<const LIT: u128> FromLiteralUnsigned<LIT> for u8 {
 }
 
 impl<const LIT: u128> FromLiteralUnsigned<LIT> for i8 {
-    const VALID_LITERAL: u128 ={
+    const VALID_LITERAL: u128 = {
         let max = i8::MAX as u128;
         if LIT > max {
             panic!("Out of range integer literal")
@@ -58,7 +55,7 @@ impl<const LIT: u128> FromLiteralUnsigned<LIT> for i8 {
 }
 
 impl<const LIT: i128> FromLiteralSigned<LIT> for i8 {
-    const VALID_LITERAL: i128 ={
+    const VALID_LITERAL: i128 = {
         let min = i8::MIN as i128;
         let max = i8::MAX as i128;
         if LIT < min || LIT > max {
@@ -73,8 +70,7 @@ impl<const LIT: i128> FromLiteralSigned<LIT> for i8 {
 }
 
 // Base definition
-impl<'a, Str: TypeStr> FromLiteralStr<Str> for &'a str
-{
+impl<'a, Str: TypeStr> FromLiteralStr<Str> for &'a str {
     const VALID_LITERAL: &'static str = Str::STR;
     fn into_self() -> Self {
         <Self as FromLiteralStr<Str>>::VALID_LITERAL
@@ -82,8 +78,7 @@ impl<'a, Str: TypeStr> FromLiteralStr<Str> for &'a str
 }
 
 // Build owned strings directly from string literals
-impl<Str: TypeStr> FromLiteralStr<Str> for String
-{
+impl<Str: TypeStr> FromLiteralStr<Str> for String {
     const VALID_LITERAL: &'static str = Str::STR;
     fn into_self() -> Self {
         <Self as FromLiteralStr<Str>>::VALID_LITERAL.to_string()
@@ -97,7 +92,7 @@ pub enum Greeting {
     Goodbye,
 }
 impl<Str: TypeStr> FromLiteralStr<Str> for Greeting
-    where
+where
     tlist::Len<Str>: ArrayLength<u8>,
 {
     const VALID_LITERAL: &'static str = {
@@ -167,11 +162,12 @@ mod tests {
         use type_str::Byte;
         // [103, 114, 101, 101, 116, 105, 110, 103, 0]
         // let y: Greeting = FromLiteralStr::<TList![Char<103>, Char<114>, Char<101>, Char<101>, Char<116>, Char<105>, Char<110>, Char<103>]>::into_self();
-        let y: Greeting = FromLiteralStr::<TList![Byte<104>, Byte<101>, Byte<108>, Byte<108>, Byte<111>]>::into_self();
+        let y: Greeting = FromLiteralStr::<
+            TList![Byte<104>, Byte<101>, Byte<108>, Byte<108>, Byte<111>],
+        >::into_self();
         println!("greeting: {y:?}");
     }
 }
-
 
 // pub fn compile_time_error_on_invalid_inputs() {
 //     let y: u8 = FromLiteralSigned::<1024>::into_self();
@@ -196,4 +192,3 @@ pub fn main() {
     let x = example();
     println!("x is: {x:?}");
 }
-
