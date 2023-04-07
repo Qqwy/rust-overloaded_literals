@@ -50,11 +50,11 @@ pub const MAX_STR_LIT_LEN: usize = 32768;
 /// because regardless of their content VAL, they all implement the [ContainsByte] trait.
 ///
 /// So for a string like
-/// ```rust
+/// ```compile_only
 /// "hello"
 /// ```
 /// the macro builds the type-level list:
-/// ```rust
+/// ```compile_only
 /// TList![Byte<104>, Byte<101>, Byte<108>, Byte<108>, Byte<111>]
 /// // Which is syntactic sugar for:
 /// TCons<Byte<104>, TCons<Byte<101>, TCons<Byte<108>, TCons<Byte<108>, TCons<Byte<111>, TNil>>>>>

@@ -6,7 +6,7 @@ use type_str::TypeStr;
 ///
 /// # Usage
 ///
-/// ```rust
+/// ```compile_only
 /// #[overloaded_literals]
 /// pub fn str_example() {
 ///    let x: NonZeroU8 = 10;
@@ -34,12 +34,12 @@ mod sealed {
 /// Build your datatype from a `&'static str` literal.
 ///
 /// The [macro@overloaded_literals] macro turns signed integer literals like
-/// ```rust
+/// ```compile_only
 /// "hello"
 /// ```
 /// into calls to
 ///
-/// ```rust
+/// ```compile_only
 /// FromLiteralStr::<"hello">::VALID_LITERAL::into_self()
 /// ```
 /// _NOTE: Because stable rust does not currently support generic const static str literals,
@@ -88,12 +88,12 @@ pub trait FromLiteralStr<TStr: TypeStr> {
 /// Build your datatype from an unsigned integer literal.
 ///
 /// The [macro@overloaded_literals] macro turns unsigned integer literals like
-/// ```rust
-/// "hello"
+/// ```compile_only
+/// 1234
 /// ```
 /// into calls to
 ///
-/// ```rust
+/// ```compile_only
 /// FromLiteralStr::<1234>::VALID_LITERAL::into_self()
 /// ```
 ///
@@ -136,12 +136,12 @@ pub trait FromLiteralUnsigned<const LIT: u128> {
 /// Build your datatype from a signed integer literal.
 ///
 /// The [macro@overloaded_literals] macro turns signed integer literals like
-/// ```rust
+/// ```compile_only
 /// -1234
 /// ```
 /// into calls to
 ///
-/// ```rust
+/// ```compile_only
 /// FromLiteralSigned::<-1234>::VALID_LITERAL::into_self()
 /// ```
 ///
