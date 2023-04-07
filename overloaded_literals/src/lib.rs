@@ -430,6 +430,17 @@ pub fn example() -> i8 {
 }
 
 #[overloaded_literals]
+pub fn nonzero_example() {
+    let res = foo(1);
+    println!("{:?}", res);
+    // let x: NonZeroI8 = 0;
+    // println!("{:?}", x);
+}
+fn foo(val: NonZeroI8) -> NonZeroI8 {
+    val
+}
+
+#[overloaded_literals]
 pub fn str_example() -> Greeting {
     let x: Greeting = "hello";
     // println!("{:?}", x);

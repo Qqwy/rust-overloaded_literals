@@ -17,9 +17,7 @@ fn wrap_signed(unsigned_expr_lit: &ExprLit, span: Span) -> Option<syn::Expr> {
             if !attrs.is_empty() {
                 return None;
             }
-            let res = parse_quote_spanned!(span=>{
-                ::overloaded_literals::FromLiteralSigned::<-#lit_int>::into_self()
-            });
+            let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralSigned::<-#lit_int>::into_self() );
             Some(res)
         }
         _ => None,
@@ -38,9 +36,7 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             if !attrs.is_empty() {
                 return Expr::Lit(expr_lit);
             }
-            let res = parse_quote_spanned!(span=>{
-                ::overloaded_literals::FromLiteralUnsigned::<#expr_lit>::into_self()
-            });
+            let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralUnsigned::<#expr_lit>::into_self());
             res
         }
         ExprLit {
@@ -64,9 +60,7 @@ fn build_typestr(string: &str, span: Span) -> syn::Expr {
     for byte in string.as_bytes().iter().rev() {
         res = parse_quote_spanned!(span=> ::tlist::TCons<::overloaded_literals::type_str::Byte<#byte>, #res>);
     }
-    let res = parse_quote_spanned!(span=> {
-        ::overloaded_literals::FromLiteralStr::<#res>::into_self()
-    });
+    let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralStr::<#res>::into_self());
     res
 }
 
