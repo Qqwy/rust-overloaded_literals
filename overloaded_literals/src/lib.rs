@@ -10,7 +10,7 @@ pub trait FromLiteralStr<TStr: TypeStr> {
     fn into_self() -> Self;
 }
 
-/// Build your datatype from a valid unsigned integer literal.
+/// Build your datatype from an unsigned integer literal.
 ///
 /// The [macro@overloaded_literals] macro turns unsigned integer literals like
 /// ```rust
@@ -28,7 +28,7 @@ pub trait FromLiteralStr<TStr: TypeStr> {
 /// The second part (`into_self()`) runs at runtime, and is where you create your actual value,
 /// knowing that the input is guaranteed to be valid.
 ///
-/// ```ignore
+/// ```txt
 /// FromLiteralUnsigned::<1234>::VALID_LITERAL.into_self()
 /// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ///               compile time                 ^^^^^^^^^^^
@@ -53,20 +53,58 @@ pub trait FromLiteralUnsigned<const LIT: u128> {
     /// You have access to [VALID_LITERAL](FromLiteralUnsigned::VALID_LITERAL) (using the syntax `let val = <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL;`),
     /// and should turn it into your desired value.
     ///
-    /// If you want, you can use an 'unsafe unchecked' constructor, if one exists, since you have done any validation already.
+    /// If you want, you can use an unsafe 'unchecked' constructor, if one exists, since you have done any validation already.
     /// (But even if using a normal constructor, in all likelyhood the compiler is smart enough to remove the duplicate checks since the input is a literal value.)
     fn into_self() -> Self;
 }
 
+/// Build your datatype from a signed integer literal.
+///
+/// The [macro@overloaded_literals] macro turns signed integer literals like
+/// ```rust
+/// -1234
+/// ```
+/// into calls to
+///
+/// ```rust
+/// FromLiteralSigned::<-1234>::VALID_LITERAL::into_self()
+/// ```
+///
+/// The first part (`VALID_LITERAL`) runs at compile-time, allowing you to perform input checks,
+/// where invalid input results in a compile error.
+///
+/// The second part (`into_self()`) runs at runtime, and is where you create your actual value,
+/// knowing that the input is guaranteed to be valid.
+///
+/// ```txt
+/// FromLiteralSigned::<-1234>::VALID_LITERAL.into_self()
+/// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+///               compile time                 ^^^^^^^^^^^
+///                                              runtime
+/// ```
+///
 pub trait FromLiteralSigned<const LIT: i128> {
+    /// The definition of `VALID_LITERAL` is evaluated at compile-time.
+    ///
+    /// Inside this definition you have access to `LIT`.
+    ///
+    /// An implementation of `VALID_LITERAL` should perform input checking:
+    /// - If the input is valid, return `LIT` unchanged.
+    /// - If the input is invalid, [panic](core::panic!).
+    ///   Because this is evaluated at compile-time, this results in a compile error.
     const VALID_LITERAL: i128;
+
+    /// Turns a [VALID_LITERAL](FromLiteralSigned::VALID_LITERAL) into the actual runtime value.
+    ///
+    /// This part runs at runtime.
+    ///
+    /// You have access to [VALID_LITERAL](FromLiteralSigned::VALID_LITERAL) (using the syntax `let val = <Self as FromLiteralSigned<LIT>>::VALID_LITERAL;`),
+    /// and should turn it into your desired value.
+    ///
+    /// If you want, you can use an unsafe 'unchecked' constructor, if one exists, since you have done any validation already.
+    /// (But even if using a normal constructor, in all likelyhood the compiler is smart enough to remove the duplicate checks since the input is a literal value.)
     fn into_self() -> Self;
 }
-
-// pub trait FromLiteralStr<const LIT: &'static str> {
-//     const VALID_LITERAL: &'static str;
-//     fn into_self() -> Self;
-// }
 
 impl<const LIT: u128> FromLiteralUnsigned<LIT> for u8 {
     const VALID_LITERAL: u128 = {
@@ -219,7 +257,7 @@ mod tests {
 
 #[overloaded_literals]
 pub fn example() -> i8 {
-    let x = -100;
+    let x = -1000;
     let _y: u8 = 123;
     x
 }
