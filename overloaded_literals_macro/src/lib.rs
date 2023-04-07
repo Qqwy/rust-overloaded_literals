@@ -14,19 +14,15 @@ fn wrap_signed(unsigned_expr_lit: &ExprLit, span: Span) -> Option<syn::Expr> {
             attrs,
             lit: Lit::Int(lit_int),
         } => {
-            // println!("Found signed integer literal: {:?}", lit_int.base10_digits());
             if !attrs.is_empty() {
-                return None; // return Expr::Lit(unsigned_expr_lit)
+                return None;
             }
-            // let span = lit_int.span();
             let res = parse_quote_spanned!(span=>{
                 ::overloaded_literals::FromLiteralSigned::<-#lit_int>::into_self()
             });
-            // println!("{:?}", res);
-            // dbg!(&res);
             Some(res)
         }
-        _ => None, // Expr::Lit(other.clone()),
+        _ => None,
     }
 }
 
@@ -39,14 +35,12 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             attrs,
             lit: Lit::Int(_lit_int),
         } => {
-            // println!("Found unsigned integer literal: {:?}", lit_int.base10_digits());
             if !attrs.is_empty() {
                 return Expr::Lit(expr_lit);
             }
             let res = parse_quote_spanned!(span=>{
                 ::overloaded_literals::FromLiteralUnsigned::<#expr_lit>::into_self()
             });
-            // println!("{:?}", res);
             res
         }
         ExprLit {
@@ -59,36 +53,30 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             if lit_str.value().len() > MAX_STR_LIT_LEN {
                 return Expr::Lit(expr_lit);
             }
-            println!("Found literal str: {lit_str:?}");
-
-            // todo!()
-            // parse_quote_spanned!(span=> { #expr_lit })
-            str_to_thingy(&lit_str.value(), span)
+            build_typestr(&lit_str.value(), span)
         }
         other => Expr::Lit(other.clone()),
     }
 }
 
-fn str_to_thingy(string: &str, span: Span) -> syn::Expr {
+fn build_typestr(string: &str, span: Span) -> syn::Expr {
     let mut res = quote!(::tlist::TNil);
     for byte in string.as_bytes().iter().rev() {
-        // println!("res: {}", &res.to_string());
         res = parse_quote_spanned!(span=> ::tlist::TCons<::overloaded_literals::type_str::Byte<#byte>, #res>);
     }
-    // println!("final res: {}", &res.to_string());
     let res = parse_quote_spanned!(span=> {
         ::overloaded_literals::FromLiteralStr::<#res>::into_self()
     });
-    // println!("{}", &res.to_string());
     res
 }
 
 impl Fold for Args {
+    // We fold at the level of `Expr` because when we change a literal, the result will be an `Expr`.
     fn fold_expr(&mut self, i: syn::Expr) -> syn::Expr {
         let span = i.span();
         let f = self;
-        // println!("i: {:?}", i);
         match i {
+            // Negative int literals are represented as Expr::Unary(UnOp::Neg, Expr::Lit(...))
             Expr::Unary(ExprUnary {
                 attrs,
                 op: op @ UnOp::Neg(_),
@@ -106,8 +94,14 @@ impl Fold for Args {
                     Expr::Unary(ExprUnary { attrs, op, expr })
                 }
             },
-            Expr::Lit(expr_lit) => wrap_unsigned_or_str(expr_lit, span),
-            // Rest of the clauses is copied over from the default implementation of Fold::fold_expr:
+            Expr::Lit(expr_lit) => {
+                // Positive int or string literals are 'plain' Expr::Lit
+                wrap_unsigned_or_str(expr_lit, span)
+            },
+            // We do not change any other type of expression,
+            // but need to recurse into them.
+            //
+            // These clauses are copied over from the default implementation of `Fold::fold_expr`:
             Expr::Array(_binding_0) => Expr::Array(f.fold_expr_array(_binding_0)),
             Expr::Assign(_binding_0) => Expr::Assign(f.fold_expr_assign(_binding_0)),
             Expr::Async(_binding_0) => Expr::Async(f.fold_expr_async(_binding_0)),
@@ -127,7 +121,7 @@ impl Fold for Args {
             Expr::Index(_binding_0) => Expr::Index(f.fold_expr_index(_binding_0)),
             Expr::Infer(_binding_0) => Expr::Infer(f.fold_expr_infer(_binding_0)),
             Expr::Let(_binding_0) => Expr::Let(f.fold_expr_let(_binding_0)),
-            // Expr::Lit(_binding_0) => Expr::Lit(f.fold_expr_lit(_binding_0)),
+            // Expr::Lit(_binding_0) => Expr::Lit(f.fold_expr_lit(_binding_0)), // <- This one we handle above
             Expr::Loop(_binding_0) => Expr::Loop(f.fold_expr_loop(_binding_0)),
             Expr::Macro(_binding_0) => Expr::Macro(f.fold_expr_macro(_binding_0)),
             Expr::Match(_binding_0) => Expr::Match(f.fold_expr_match(_binding_0)),
@@ -174,7 +168,6 @@ mod tests {
                 res
             }
         };
-        // let input_fn = parse_macro_input!(fun as ItemFn);
         let mut args = Args;
         let _out = args.fold_item_fn(input_fun);
         // println!("{:?}", out)
@@ -192,10 +185,4 @@ mod tests {
         let _out = args.fold_item_fn(input_fun);
         // println!("{:?}", out)
     }
-
-    // #[test]
-    // fn it_works() {
-    //     let result = add(2, 2);
-    //     assert_eq!(result, 4);
-    // }
 }
