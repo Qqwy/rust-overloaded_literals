@@ -5,8 +5,57 @@ use generic_array::ArrayLength;
 pub use overloaded_literals_macro::overloaded_literals;
 use type_str::TypeStr;
 
+/// Build your datatype from a `&'static str` literal.
+///
+/// The [macro@overloaded_literals] macro turns signed integer literals like
+/// ```rust
+/// "hello"
+/// ```
+/// into calls to
+///
+/// ```rust
+/// FromLiteralStr::<"hello">::VALID_LITERAL::into_self()
+/// ```
+/// _NOTE: Because stable rust does not currently support generic const static str literals,
+/// the real desugaring is slightly more involved, see [TypeStr] if you are curious._
+///
+/// The first part (`VALID_LITERAL`) runs at compile-time, allowing you to perform input checks,
+/// where invalid input results in a compile error.
+///
+/// The second part (`into_self()`) runs at runtime, and is where you create your actual value,
+/// knowing that the input is guaranteed to be valid.
+///
+/// ```txt
+/// FromLiteralStr::<-1234>::VALID_LITERAL.into_self()
+/// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+///               compile time             ^^^^^^^^^^^
+///                                          runtime
+/// ```
+///
+///
 pub trait FromLiteralStr<TStr: TypeStr> {
+    /// The definition of `VALID_LITERAL` is evaluated at compile-time.
+    ///
+    /// Inside this definition you have access to `TStr::STR` which returns a `&'static str`.
+    ///
+    /// An implementation of `VALID_LITERAL` should perform input checking:
+    /// - If the input is valid, return `TStr::STR` unchanged.
+    /// - If the input is invalid, [panic](core::panic!).
+    ///   Because this is evaluated at compile-time, this results in a compile error.
+    ///
+    /// Since not many operations on `&'static str` are stably allowed in const contexts yet,
+    /// you might want to use crates like [const-str](https://crates.io/crates/const-str).
     const VALID_LITERAL: &'static str;
+
+    /// Turns a [VALID_LITERAL](FromLiteralUnsigned::VALID_LITERAL) into the actual runtime value.
+    ///
+    /// This part runs at runtime.
+    ///
+    /// You have access to [VALID_LITERAL](FromLiteralStr::VALID_LITERAL) (using the syntax `let val = <Self as FromLiteralStr<TStr>>::VALID_LITERAL;`),
+    /// and should turn it into your desired value.
+    ///
+    /// If you want, you can use an unsafe 'unchecked' constructor, if one exists, since you have done any validation already.
+    /// (But even if using a normal constructor, in all likelyhood the compiler is smart enough to remove the duplicate checks since the input is a literal value.)
     fn into_self() -> Self;
 }
 
@@ -14,12 +63,12 @@ pub trait FromLiteralStr<TStr: TypeStr> {
 ///
 /// The [macro@overloaded_literals] macro turns unsigned integer literals like
 /// ```rust
-/// 1234
+/// "hello"
 /// ```
 /// into calls to
 ///
 /// ```rust
-/// FromLiteralUnsigned::<1234>::VALID_LITERAL::into_self()
+/// FromLiteralStr::<1234>::VALID_LITERAL::into_self()
 /// ```
 ///
 /// The first part (`VALID_LITERAL`) runs at compile-time, allowing you to perform input checks,
@@ -78,9 +127,9 @@ pub trait FromLiteralUnsigned<const LIT: u128> {
 ///
 /// ```txt
 /// FromLiteralSigned::<-1234>::VALID_LITERAL.into_self()
-/// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-///               compile time                 ^^^^^^^^^^^
-///                                              runtime
+/// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+///               compile time                ^^^^^^^^^^^
+///                                             runtime
 /// ```
 ///
 pub trait FromLiteralSigned<const LIT: i128> {
