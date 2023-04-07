@@ -1,9 +1,35 @@
 extern crate self as overloaded_literals;
 pub mod type_str;
-use generic_array::ArrayLength;
-
-pub use overloaded_literals_macro::overloaded_literals;
 use type_str::TypeStr;
+
+/// Attribute macro to overload literals in the function it is used on.
+///
+/// # Usage
+///
+/// ```rust
+/// #[overloaded_literals]
+/// pub fn str_example() {
+///    let x: NonZeroU8 = 10;
+///    println!("x is: {:?}", &x);
+///    let y: NonZeroIsize = -42;
+///    println!("y is: {:?}", &y);
+///    let z: Greeting = "hello";
+///    println!("z is: {:?}", &z);
+/// }
+/// ```
+///
+/// - Any *unsigned* integer literal like `1337` is rewritten to [`FromLiteralUnsigned::<1337>::into_self()`](FromLiteralUnsigned)
+/// - Any *unsigned* integer literal like `-4200` is rewritten to [`FromLiteralSigned::<-4200>::into_self()`](FromLiteralSigned)
+/// - Any `str` literal like `"hello"` is rewritten to [`FromLiteralStr::<"hello">::into_self()`](FromLiteralStr)
+pub use overloaded_literals_macro::overloaded_literals;
+
+
+mod sealed {
+    pub trait Sealed {}
+    impl<const VAL: u8> Sealed for crate::type_str::Byte<VAL> {}
+    impl Sealed for tlist::TNil {}
+    impl<H, T: tlist::TList> Sealed for tlist::TCons<H, T> {}
+}
 
 /// Build your datatype from a `&'static str` literal.
 ///
@@ -222,8 +248,6 @@ pub enum Greeting {
     Goodbye,
 }
 impl<Str: TypeStr> FromLiteralStr<Str> for Greeting
-where
-    tlist::Len<Str>: ArrayLength<u8>,
 {
     const VALID_LITERAL: &'static str = {
         let val = Str::STR;
@@ -306,7 +330,7 @@ mod tests {
 
 #[overloaded_literals]
 pub fn example() -> i8 {
-    let x = -1000;
+    let x = -100;
     let _y: u8 = 123;
     x
 }
