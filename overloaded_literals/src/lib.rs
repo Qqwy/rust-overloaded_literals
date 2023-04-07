@@ -13,7 +13,14 @@ pub trait FromLiteralStr<TStr: TypeStr> {
 /// Build your datatype from a valid unsigned integer literal.
 ///
 /// The [macro@overloaded_literals] macro turns unsigned integer literals like
-/// `1234` into calls to `FromLiteralUnsigned::<1234>::VALID_LITERAL::into_self()`.
+/// ```rust
+/// 1234
+/// ```
+/// into calls to
+///
+/// ```rust
+/// FromLiteralUnsigned::<1234>::VALID_LITERAL::into_self()
+/// ```
 ///
 /// The first part (`VALID_LITERAL`) runs at compile-time, allowing you to perform input checks,
 /// where invalid input results in a compile error.
