@@ -1,5 +1,8 @@
 extern crate self as overloaded_literals;
 pub mod type_str;
+use std::num::{NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize};
+use std::num::{NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize};
+
 use type_str::TypeStr;
 
 /// Attribute macro to overload literals in the function it is used on.
@@ -84,6 +87,23 @@ pub trait FromLiteralStr<TStr: TypeStr> {
     /// (But even if using a normal constructor, in all likelyhood the compiler is smart enough to remove the duplicate checks since the input is a literal value.)
     fn into_self() -> Self;
 }
+
+// Base definition
+impl<'a, Str: TypeStr> FromLiteralStr<Str> for &'a str {
+    const VALID_LITERAL: &'static str = Str::STR;
+    fn into_self() -> Self {
+        <Self as FromLiteralStr<Str>>::VALID_LITERAL
+    }
+}
+
+// Build owned strings directly from string literals
+impl<Str: TypeStr> FromLiteralStr<Str> for String {
+    const VALID_LITERAL: &'static str = Str::STR;
+    fn into_self() -> Self {
+        <Self as FromLiteralStr<Str>>::VALID_LITERAL.to_string()
+    }
+}
+
 
 /// Build your datatype from an unsigned integer literal.
 ///
@@ -181,65 +201,139 @@ pub trait FromLiteralSigned<const LIT: i128> {
     fn into_self() -> Self;
 }
 
-impl<const LIT: u128> FromLiteralUnsigned<LIT> for u8 {
-    const VALID_LITERAL: u128 = {
-        let min = u8::MIN as u128;
-        let max = i8::MAX as u128;
-        if LIT < min || LIT > max {
-            panic!("Out of range integer literal")
-        } else {
-            LIT
+macro_rules! unsigned_impl {
+    ($type:ty) => {
+        impl<const LIT: u128> FromLiteralUnsigned<LIT> for $type {
+            const VALID_LITERAL: u128 = {
+                let min = <$type>::MIN as u128;
+                let max = <$type>::MAX as u128;
+                if LIT < min || LIT > max {
+                    panic!("Out of range integer literal")
+                } else {
+                    LIT
+                }
+            };
+            fn into_self() -> Self {
+                <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as $type
+            }
         }
-    }; // u8_from_integer_literal::<LIT>();
-    fn into_self() -> Self {
-        <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as u8
     }
 }
 
-impl<const LIT: u128> FromLiteralUnsigned<LIT> for i8 {
-    const VALID_LITERAL: u128 = {
-        let max = i8::MAX as u128;
-        if LIT > max {
-            panic!("Out of range integer literal")
-        } else {
-            LIT
+
+macro_rules! signed_impl {
+    ($type:ty) => {
+        impl<const LIT: i128> FromLiteralSigned<LIT> for $type {
+            const VALID_LITERAL: i128 = {
+                let min = <$type>::MIN as i128;
+                let max = <$type>::MAX as i128;
+                if LIT < min || LIT > max {
+                    panic!("Out of range integer literal")
+                } else {
+                    LIT
+                }
+            };
+            fn into_self() -> Self {
+                <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as $type
+            }
         }
-    };
-    fn into_self() -> Self {
-        <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as i8
     }
 }
 
-impl<const LIT: i128> FromLiteralSigned<LIT> for i8 {
-    const VALID_LITERAL: i128 = {
-        let min = i8::MIN as i128;
-        let max = i8::MAX as i128;
-        if LIT < min || LIT > max {
-            panic!("Out of range integer literal")
-        } else {
-            LIT
+unsigned_impl!(u8);
+unsigned_impl!(u16);
+unsigned_impl!(u32);
+unsigned_impl!(u64);
+unsigned_impl!(u128);
+unsigned_impl!(usize);
+
+
+unsigned_impl!(i8);
+unsigned_impl!(i16);
+unsigned_impl!(i32);
+unsigned_impl!(i64);
+unsigned_impl!(i128);
+unsigned_impl!(isize);
+
+signed_impl!(i8);
+signed_impl!(i16);
+signed_impl!(i32);
+signed_impl!(i64);
+signed_impl!(i128);
+signed_impl!(isize);
+
+
+macro_rules! nonzero_unsigned_impl {
+    ($type:ty, $orig_type:ty) => {
+        impl<const LIT: u128> FromLiteralUnsigned<LIT> for $type {
+            const VALID_LITERAL: u128 = {
+                let max = <$orig_type>::MAX as u128;
+                if LIT == 0 {
+                    panic!("NonZero integer literal was 0")
+                }
+                if LIT > max {
+                    panic!("Out of range NonZero integer literal")
+                } else {
+                    LIT
+                }
+            };
+            fn into_self() -> Self {
+                let raw = <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as $orig_type;
+                // SAFETY: Bounds check happened at compile time
+                unsafe { <$type>::new_unchecked(raw) }
+            }
         }
-    };
-    fn into_self() -> Self {
-        <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as i8
     }
 }
 
-// Base definition
-impl<'a, Str: TypeStr> FromLiteralStr<Str> for &'a str {
-    const VALID_LITERAL: &'static str = Str::STR;
-    fn into_self() -> Self {
-        <Self as FromLiteralStr<Str>>::VALID_LITERAL
+macro_rules! nonzero_signed_impl {
+    ($type:ty, $orig_type:ty) => {
+        impl<const LIT: i128> FromLiteralSigned<LIT> for $type {
+            const VALID_LITERAL: i128 = {
+                let min = <$orig_type>::MIN as i128;
+                let max = <$orig_type>::MAX as i128;
+                if LIT == 0 {
+                    panic!("NonZero integer literal was 0")
+                }
+                if LIT < min || LIT > max {
+                    panic!("Out of range NonZero integer literal")
+                } else {
+                    LIT
+                }
+            };
+            fn into_self() -> Self {
+                let raw = <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as $orig_type;
+                // SAFETY: Bounds check happened at compile time
+                unsafe { <$type>::new_unchecked(raw) }
+            }
+        }
     }
 }
 
-// Build owned strings directly from string literals
-impl<Str: TypeStr> FromLiteralStr<Str> for String {
-    const VALID_LITERAL: &'static str = Str::STR;
-    fn into_self() -> Self {
-        <Self as FromLiteralStr<Str>>::VALID_LITERAL.to_string()
-    }
-}
+nonzero_unsigned_impl!(NonZeroU8, u8);
+nonzero_unsigned_impl!(NonZeroU16, u16);
+nonzero_unsigned_impl!(NonZeroU32, u32);
+nonzero_unsigned_impl!(NonZeroU64, u64);
+nonzero_unsigned_impl!(NonZeroU128, u128);
+nonzero_unsigned_impl!(NonZeroUsize, usize);
+
+nonzero_unsigned_impl!(NonZeroI8, i8);
+nonzero_unsigned_impl!(NonZeroI16, i16);
+nonzero_unsigned_impl!(NonZeroI32, i32);
+nonzero_unsigned_impl!(NonZeroI64, i64);
+nonzero_unsigned_impl!(NonZeroI128, i128);
+nonzero_unsigned_impl!(NonZeroIsize, isize);
+nonzero_signed_impl!(NonZeroI8, i8);
+nonzero_signed_impl!(NonZeroI16, i16);
+nonzero_signed_impl!(NonZeroI32, i32);
+nonzero_signed_impl!(NonZeroI64, i64);
+nonzero_signed_impl!(NonZeroI128, i128);
+nonzero_signed_impl!(NonZeroIsize, isize);
+// unsigned_impl!(NonZeroU16);
+// unsigned_impl!(NonZeroU32);
+// unsigned_impl!(NonZeroU64);
+// unsigned_impl!(NonZeroUsize);
+
 
 // Simple example:
 #[derive(Debug, Clone, PartialEq, Eq)]
