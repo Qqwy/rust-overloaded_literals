@@ -5,8 +5,8 @@
 //! Items in this module need to be public as the types and structs contained within
 //! are built by the `overloaded_literals!` macro.
 //!
-//! However, consider the contents of this module an implementation detail,
-//! and do not depend on these details directly in your code. They are subject to change.
+//! However, **consider the contents of this module an implementation detail,
+//! and do not depend on these details directly in your code. They are subject to change**.
 //!
 //! The only API which is guaranteed, is that the `TStr` trait will expose an associated const value with the signature `const STR: &'static str;`.
 use tlist::{Len, TCons, TList, TNil};
