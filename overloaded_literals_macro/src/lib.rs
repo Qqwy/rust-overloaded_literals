@@ -154,6 +154,12 @@ pub fn overloaded_literals(_metadata: TokenStream, input: TokenStream) -> TokenS
     TokenStream::from(quote!(#output))
 }
 
+
+// These tests are mainly here for debugging;
+// They (only) ensure the happy path does not crash.
+// (And if it does, we have relatively easy debugging)
+//
+// More proper full-range tests can be found in the main crate.
 #[cfg(test)]
 mod tests {
     use syn::parse_quote;
@@ -161,10 +167,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn example() {
+    fn unsigned_example() {
         let input_fun = parse_quote! {
             fn foo() {
-                let res: u8 = foo(1, -2);
+                let res: u8 = foo(1, 1234567);
+                res
+            }
+        };
+        let mut args = Args;
+        let _out = args.fold_item_fn(input_fun);
+        // println!("{:?}", out)
+    }
+
+    #[test]
+    fn signed_example() {
+        let input_fun = parse_quote! {
+            fn foo() {
+                let res: u8 = bar(-10, -4200);
                 res
             }
         };
@@ -179,6 +198,21 @@ mod tests {
             fn foo() {
                 let res: u8 = foo("bar", "baz");
                 res
+            }
+        };
+        let mut args = Args;
+        let _out = args.fold_item_fn(input_fun);
+        // println!("{:?}", out)
+    }
+
+    #[test]
+    fn mixed_example() {
+        let input_fun = parse_quote! {
+            fn foo() {
+                let one: u8 = 1024;
+                let two: String = "hello";
+                let three: i8 = 20;
+                let four : i8 = -33;
             }
         };
         let mut args = Args;
