@@ -1,6 +1,6 @@
 extern crate proc_macro;
 use proc_macro::{TokenStream};
-use syn::{parse_macro_input, ItemFn, fold::Fold, Expr, ExprLit, Lit, UnOp, ExprUnary, parse_quote_spanned, spanned::Spanned, parse_quote, LitInt};
+use syn::{parse_macro_input, ItemFn, fold::Fold, Expr, ExprLit, Lit, UnOp, ExprUnary, parse_quote_spanned, spanned::Spanned};
 use quote::{quote, __private::Span};
 
 struct Args;
@@ -47,7 +47,7 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             if lit_str.value().len() > MAX_STR_LIT_LEN {
                 return Expr::Lit(expr_lit);
             }
-            println!("Found literal str: {:?}", lit_str);
+            println!("Found literal str: {lit_str:?}");
 
             // todo!()
             // parse_quote_spanned!(span=> { #expr_lit })
@@ -175,7 +175,7 @@ mod tests {
         };
         // let input_fn = parse_macro_input!(fun as ItemFn);
         let mut args = Args;
-        let out = args.fold_item_fn(input_fun);
+        let _out = args.fold_item_fn(input_fun);
         // println!("{:?}", out)
     }
 
@@ -188,7 +188,7 @@ mod tests {
             }
         };
         let mut args = Args;
-        let out = args.fold_item_fn(input_fun);
+        let _out = args.fold_item_fn(input_fun);
         // println!("{:?}", out)
     }
 

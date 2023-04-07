@@ -1,5 +1,4 @@
-use tlist::{TList, IsEmpty, First, TNil, TCons, Len};
-use core::ops::{Add, Sub};
+use tlist::{TList, TNil, TCons, Len};
 
 pub struct Byte<const VAL: u8>;
 

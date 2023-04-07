@@ -168,7 +168,7 @@ mod tests {
         // [103, 114, 101, 101, 116, 105, 110, 103, 0]
         // let y: Greeting = FromLiteralStr::<TList![Char<103>, Char<114>, Char<101>, Char<101>, Char<116>, Char<105>, Char<110>, Char<103>]>::into_self();
         let y: Greeting = FromLiteralStr::<TList![Byte<104>, Byte<101>, Byte<108>, Byte<108>, Byte<111>]>::into_self();
-        println!("greeting: {:?}", y);
+        println!("greeting: {y:?}");
     }
 }
 
@@ -181,7 +181,7 @@ mod tests {
 #[overloaded_literals]
 pub fn example() -> i8 {
     let x = -100;
-    let y: u8 = 123;
+    let _y: u8 = 123;
     x
 }
 
@@ -194,6 +194,6 @@ pub fn str_example() -> Greeting {
 
 pub fn main() {
     let x = example();
-    println!("x is: {:?}", x);
+    println!("x is: {x:?}");
 }
 
