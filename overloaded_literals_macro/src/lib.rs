@@ -20,17 +20,20 @@ fn wrap_signed(unsigned_expr_lit: &ExprLit, span: Span) -> Option<syn::Expr> {
             }
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralSigned::<-#lit_int>::into_self() );
             Some(res)
+        },
+        ExprLit {
+            attrs,
+            lit: Lit::Float(lit_float),
+        } => {
+            if !attrs.is_empty() {
+                return None;
+            }
+            let float = lit_float.base10_parse::<f64>().unwrap();
+            let float_bits: u64 = (-float).to_bits();
+            let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<#float_bits>::into_self());
+            Some(res)
         }
-        // ExprLit {
-        //     attrs,
-        //     lit: Lit::Float(lit_float),
-        // } => {
-        //     if !attrs.is_empty() {
-        //         return None;
-        //     }
-        //     let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<-#lit_float>::into_self() );
-        //     Some(res)
-        // }
+
         _ => None,
     }
 }
@@ -71,19 +74,18 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             }
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralBool::<#expr_lit>::into_self());
             res
-        }
-        //     res
-        // },
-        // ExprLit {
-        //     attrs,
-        //     lit: Lit::Float(_lit_float),
-        // } => {
-        //     if !attrs.is_empty() {
-        //         return Expr::Lit(expr_lit);
-        //     }
-        //     let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<#expr_lit>::into_self());
-        //     res
-        // },
+        },
+        ExprLit {
+            attrs,
+            lit: Lit::Float(lit_float),
+        } => {
+            if !attrs.is_empty() {
+                return Expr::Lit(expr_lit);
+            }
+            let float_bits: u64 = lit_float.base10_parse::<f64>().unwrap().to_bits();
+            let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<#float_bits>::into_self());
+            res
+        },
         other => Expr::Lit(other.clone()),
     }
 }

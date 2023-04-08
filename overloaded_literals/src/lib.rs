@@ -8,11 +8,15 @@ use std::println;
 
 extern crate self as overloaded_literals;
 pub mod type_str;
+pub mod type_float;
+
+pub use type_str::TypeStr;
+pub use type_float::TypeFloat;
+
 use core::num::Wrapping;
 use core::num::{NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize};
 use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
 
-pub use type_str::TypeStr;
 
 /// Attribute macro to overload literals in the function it is used on.
 ///
@@ -126,7 +130,7 @@ pub trait FromLiteralStr<TStr: TypeStr> {
     /// you might want to use crates like [const-str](https://crates.io/crates/const-str).
     const VALID_LITERAL: &'static str;
 
-    /// Turns a [VALID_LITERAL](FromLiteralUnsigned::VALID_LITERAL) into the actual runtime value.
+    /// Turns a [VALID_LITERAL](FromLiteralStr::VALID_LITERAL) into the actual runtime value.
     ///
     /// This part runs at runtime.
     ///
@@ -448,6 +452,43 @@ impl<const LIT: bool> FromLiteralBool<LIT> for bool {
     }
 }
 
+pub trait FromLiteralFloat<TFloat: TypeFloat> {
+    /// The definition of `VALID_LITERAL` is evaluated at compile-time.
+    ///
+    /// Inside this definition you have access to `TFloat::FLOAT` which returns a `f64`.
+    ///
+    /// An implementation of `VALID_LITERAL` should perform input checking:
+    /// - If the input is valid, return `TFloat::FLOAT` unchanged.
+    /// - If the input is invalid, [panic](core::panic!).
+    ///   Because this is evaluated at compile-time, this results in a compile error.
+    const VALID_LITERAL: f64;
+
+    /// Turns a [VALID_LITERAL](FromLiteralFloat::VALID_LITERAL) into the actual runtime value.
+    ///
+    /// This part runs at runtime.
+    ///
+    /// You have access to [VALID_LITERAL](FromLiteralFloat::VALID_LITERAL) (using the syntax `let val = <Self as FromLiteralFloat<TFloat>>::VALID_LITERAL;`),
+    /// and should turn it into your desired value.
+    ///
+    /// If you want, you can use an unsafe 'unchecked' constructor, if one exists, since you have done any validation already.
+    /// (But even if using a normal constructor, in all likelyhood the compiler is smart enough to remove the duplicate checks since the input is a literal value.)
+    fn into_self() -> Self;
+}
+
+impl<TFloat: TypeFloat> FromLiteralFloat<TFloat> for f64 {
+    const VALID_LITERAL: f64 = TFloat::FLOAT;
+    fn into_self() -> Self {
+        <Self as FromLiteralFloat<TFloat>>::VALID_LITERAL
+    }
+}
+
+impl<TFloat: TypeFloat> FromLiteralFloat<TFloat> for f32 {
+    const VALID_LITERAL: f64 = TFloat::FLOAT;
+    fn into_self() -> Self {
+        <Self as FromLiteralFloat<TFloat>>::VALID_LITERAL as f32
+    }
+}
+
 // pub trait FromLiteralFloat<const LIT: f64> {
 //     /// The definition of `VALID_LITERAL` is evaluated at compile-time.
 //     ///
@@ -552,8 +593,8 @@ mod tests {
     }
 }
 
-// #[overloaded_literals]
-// fn bar() {
-//     let res: (f32, f32, f32) = (1.0, -42.0, 10e3.0);
-//     res
-// }
+#[overloaded_literals]
+fn bar() -> f32 {
+    let res: (f32, f32, f64) = (1.0, -42.0, 10.0e3);
+    res.0
+}
