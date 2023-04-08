@@ -2,9 +2,12 @@
 //!
 //! # Features
 //! - Compile-time validation of literals
+//!   - Supports signed and unsigned integers and `&'static str`.
 //! - Construct your types without ceremony or boilerplate.
 //! - 100% `no_std` compatible.
 //! - Runs on stable rust. MSRV: 1.65.0
+//!
+//! Ships with implementations for `std`'s various [NonZero and Wrapping](https://doc.rust-lang.org/stable/std/num/index.html) structs
 //!
 //! # Usage
 //! Add the [macro@overloaded_literals] as attribute to a function.
@@ -482,6 +485,25 @@ nonzero_signed_impl!(NonZeroI32, i32);
 nonzero_signed_impl!(NonZeroI64, i64);
 nonzero_signed_impl!(NonZeroI128, i128);
 nonzero_signed_impl!(NonZeroIsize, isize);
+
+use core::num::Wrapping;
+impl<T: FromLiteralUnsigned<LIT>, const LIT: u128> FromLiteralUnsigned<LIT> for Wrapping<T>
+{
+    const VALID_LITERAL: u128 = T::VALID_LITERAL;
+    fn into_self() -> Self {
+        Wrapping(T::into_self())
+    }
+}
+
+impl<T: FromLiteralSigned<LIT>, const LIT: i128> FromLiteralSigned<LIT> for Wrapping<T>
+{
+    const VALID_LITERAL: i128 = T::VALID_LITERAL;
+    fn into_self() -> Self {
+        Wrapping(T::into_self())
+    }
+}
+
+
 // unsigned_impl!(NonZeroU16);
 // unsigned_impl!(NonZeroU32);
 // unsigned_impl!(NonZeroU64);
