@@ -11,7 +11,7 @@
 Overloaded Literals to construct your datatypes without boilerplate and with compile-time validation.
 
 # Features
-- Compile-time validation of literals
+- Compile-time validation of literals (with decent compiler errors)
   - Supports `bool`, signed and unsigned integers, floats and `&'static str`.
 - Construct your types without ceremony or boilerplate.
 - 100% `no_std` compatible.
