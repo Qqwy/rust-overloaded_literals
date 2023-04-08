@@ -3,16 +3,14 @@ name = "overloaded_literals"
 version = "0.5.0"
 edition = "2021"
 
-description = "Overloaded literals"
-repository = "https://github.com/CarlKCarlK/anyinput"
+description = "Overloaded Literals to construct your datatypes without boilerplate and with compile-time validation"
+repository = "https://github.com/Qqwy/rust-overloaded_literals"
 readme = "README.md"
-documentation = "https://docs.rs/anyinput/latest/anyinput/"
-authors = ["Carl Kadie"]
+authors = ["Qqwy / Marten"]
 exclude = []
 license = "MIT OR Apache-2.0"
-keywords = ["macros", "function", "generics", "ndarray", "iterator"]
-categories = ["development-tools", "rust-patterns"]
-homepage = "https://github.com/CarlKCarlK/anyinput"
+keywords = ["generic", "literals", "macros", "no_std", "overloading"]
+categories = ["development-tools", "rust-patterns", "no-std", "no-std::no-alloc", "data-structures"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
