@@ -29,5 +29,10 @@ pub trait TypeFloat: Sealed {
 }
 
 impl<const FLOAT_BITS: u64> TypeFloat for Float<FLOAT_BITS> {
-    const FLOAT: f64 = { unsafe { core::mem::transmute(FLOAT_BITS) } };
+    const FLOAT: f64 = {
+        // SAFETY: This is a const version of f64::from_bits()
+        // c.f. https://doc.rust-lang.org/std/primitive.f64.html#method.from_bits
+        // (Since NaN literals are not possible, this is 100% portable and safe)
+        unsafe { core::mem::transmute(FLOAT_BITS) }
+    };
 }
