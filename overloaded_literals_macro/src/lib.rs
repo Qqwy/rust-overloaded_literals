@@ -19,7 +19,17 @@ fn wrap_signed(unsigned_expr_lit: &ExprLit, span: Span) -> Option<syn::Expr> {
             }
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralSigned::<-#lit_int>::into_self() );
             Some(res)
-        }
+        },
+        // ExprLit {
+        //     attrs,
+        //     lit: Lit::Float(lit_float),
+        // } => {
+        //     if !attrs.is_empty() {
+        //         return None;
+        //     }
+        //     let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<-#lit_float>::into_self() );
+        //     Some(res)
+        // }
         _ => None,
     }
 }
@@ -50,7 +60,17 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
                 return Expr::Lit(expr_lit);
             }
             build_typestr(&lit_str.value(), span)
-        }
+        },
+        // ExprLit {
+        //     attrs,
+        //     lit: Lit::Float(_lit_float),
+        // } => {
+        //     if !attrs.is_empty() {
+        //         return Expr::Lit(expr_lit);
+        //     }
+        //     let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<#expr_lit>::into_self());
+        //     res
+        // },
         other => Expr::Lit(other.clone()),
     }
 }
@@ -198,6 +218,20 @@ mod tests {
         let _out = args.fold_item_fn(input_fun);
         // println!("{:?}", out)
     }
+
+
+    // #[test]
+    // fn float_example() {
+    //     let input_fun = parse_quote! {
+    //         fn foo() {
+    //             let res: u8 = foo(1.0, -42.0, 10e3.0);
+    //             res
+    //         }
+    //     };
+    //     let mut args = Args;
+    //     let _out = args.fold_item_fn(input_fun);
+    //     // println!("{:?}", out)
+    // }
 
     #[test]
     fn mixed_example() {
