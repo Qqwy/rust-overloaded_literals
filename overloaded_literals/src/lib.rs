@@ -1,3 +1,67 @@
+//!
+//!
+//!
+//! # Example
+//! ## Usage
+//! ## Implementing the traits for your own types
+//! As an example, here are the trait implementations for `NonZeroU32`.
+//!
+//! ```compile_only
+//! use overloaded_literals::{overloaded_literals, FromLiteralUnsigned, FromLiteralSigned};
+//! use std::num::NonZeroI32;
+//!
+//! // Called for 0 and positive literals:
+//! impl<const LIT: u128> FromLiteralUnsigned<LIT> for NonZeroI32 {
+//!     const VALID_LITERAL: u128 = {
+//!         let max = i32::MAX as u128;
+//!         if LIT == 0 {
+//!             panic!("NonZero integer literal was 0")
+//!         }
+//!         if LIT > max {
+//!             panic!("Out of range NonZero integer literal")
+//!         } else {
+//!             LIT
+//!         }
+//!     };
+//!     fn into_self() -> Self {
+//!         let raw = <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as i32;
+//!         // SAFETY: Bounds check happened at compile time
+//!         unsafe { NonzeroI32::new_unchecked(raw) }
+//!     }
+//! }
+//!
+//! // Called for negative literals:
+//! impl<const LIT: i128> FromLiteralSigned<LIT> for NonZeroI32 {
+//!     const VALID_LITERAL: i128 = {
+//!         let min = i32::MIN as i128;
+//!         let max = i32::MAX as i128;
+//!         if LIT == 0 {
+//!             panic!("NonZero integer literal was 0")
+//!         }
+//!         if LIT < min || LIT > max {
+//!             panic!("Out of range NonZero integer literal")
+//!         } else {
+//!             LIT
+//!         }
+//!     };
+//!     fn into_self() -> Self {
+//!         let raw = <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as i32;
+//!         // SAFETY: Bounds check happened at compile time
+//!         unsafe { NonZeroI32::new_unchecked(raw) }
+//!     }
+//! }
+//!
+//!
+//! #[overloaded_literals]
+//! fn example() {
+//!     let x: NonZeroI32 = 100;
+//!     // let y: NonZeroI32 = 0; // <- This would cause a compile error :-)
+//! }
+//! ```
+//!
+//! Another full example, on how to accept a `str` literal for your datatype, can be found in the documentation of  [FromLiteralStr].
+//!
+
 extern crate self as overloaded_literals;
 pub mod type_str;
 use std::num::{NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize};
@@ -64,9 +128,10 @@ mod sealed {
 /// # Example
 /// As an example, consider a simple enum, whose valid values are `"hello"` and `"goodbye".`
 /// Since the amount of builtin const operations that are allowed on `str` is currently limited on stable rust,
-/// we use the `const_str` crate for these.
+/// we use the [crate@const_str] crate for these.
 /// ```rust
 /// use overloaded_literals::{overloaded_literals, FromLiteralStr, TypeStr};
+///
 /// #[derive(Debug, Clone, PartialEq, Eq)]
 /// pub enum Greeting {
 ///     Hello,
@@ -374,34 +439,6 @@ nonzero_signed_impl!(NonZeroIsize, isize);
 // unsigned_impl!(NonZeroUsize);
 
 
-// Simple example:
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Greeting {
-    Hello,
-    Goodbye,
-}
-
-impl<Str: TypeStr> FromLiteralStr<Str> for Greeting
-{
-    const VALID_LITERAL: &'static str = {
-        let val = Str::STR;
-        if const_str::equal!(val, "hello") || const_str::equal!(val, "goodbye") {
-            val
-        } else {
-            panic!("Invalid Greeting literal");
-        }
-    };
-
-    fn into_self() -> Self {
-        let string = <Self as FromLiteralStr<Str>>::VALID_LITERAL;
-        match string {
-            "hello" => Greeting::Hello,
-            "goodbye" => Greeting::Goodbye,
-            _ => unreachable!(),
-        }
-    }
-}
-
 // use core::ffi::CStr;
 // impl<Str: TypeStr> FromLiteralStr<Str> for &'static CStr {
 //     const VALID_LITERAL: &'static str = {
@@ -471,46 +508,10 @@ mod tests {
         use type_str::Byte;
         // [103, 114, 101, 101, 116, 105, 110, 103, 0]
         // let y: Greeting = FromLiteralStr::<TList![Char<103>, Char<114>, Char<101>, Char<101>, Char<116>, Char<105>, Char<110>, Char<103>]>::into_self();
-        let y: Greeting = FromLiteralStr::<
+        let y: &'static str = FromLiteralStr::<
             TList![Byte<104>, Byte<101>, Byte<108>, Byte<108>, Byte<111>],
         >::into_self();
         println!("greeting: {y:?}");
     }
 }
 
-// pub fn compile_time_error_on_invalid_inputs() {
-//     let y: u8 = FromLiteralSigned::<1024>::into_self();
-//     assert_eq!(y, 10);
-// }
-
-#[overloaded_literals]
-pub fn example() -> i8 {
-    let x = -100;
-    let _y: u8 = 123;
-    x
-}
-
-#[overloaded_literals]
-pub fn nonzero_example() {
-    let res = foo(1);
-    println!("{:?}", res);
-    // let x: NonZeroI8 = 0;
-    // println!("{:?}", x);
-}
-
-
-fn foo(val: NonZeroI8) -> NonZeroI8 {
-    val
-}
-
-#[overloaded_literals]
-pub fn str_example() -> Greeting {
-    let x: Greeting = "hello";
-    // println!("{:?}", x);
-    x
-}
-
-pub fn main() {
-    let x = example();
-    println!("x is: {x:?}");
-}
