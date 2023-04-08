@@ -10,7 +10,7 @@ Overloaded Literals to construct your datatypes without boilerplate and with com
 Ships with implementations for `std`'s various [NonZero and Wrapping](https://doc.rust-lang.org/stable/std/num/index.html) structs
 
 # Usage
-Add the [macro@overloaded_literals] as attribute to a function.
+Add the [overloaded_literals](https://docs.rs/overloaded_literals/latest/overloaded_literals/macro.overloaded_literals.html) as attribute to a function.
 This will rewrite any literals to calls to a trait with the literal as generic const parameter.
 Because a trait is used, construction of any desired target type which implements the type happens automatically:
 
@@ -44,7 +44,7 @@ mistake();
 ```
 
 # Implementing the traits
-As an example, here are the trait implementations for a type `EvenI32` which ensures that the value it stores is even, similarly to how [NonZeroI32] ensures that the contained value is non-zero.
+As an example, here are the trait implementations for a type `EvenI32` which ensures that the value it stores is even, similarly to how [NonZeroI32](https://doc.rust-lang.org/stable/std/num/struct.NonZeroI32.html) ensures that the contained value is non-zero.
 
 ```rust
 use overloaded_literals::{overloaded_literals, FromLiteralUnsigned, FromLiteralSigned};
@@ -101,11 +101,11 @@ fn example() {
 example()
 ```
 
-Another full example, on how to accept a `str` literal for your datatype, can be found in the documentation of  [FromLiteralStr].
+Another full example, on how to accept a `str` literal for your datatype, can be found in the documentation of  [FromLiteralStr](https://docs.rs/overloaded_literals/latest/overloaded_literals/trait.FromLiteralStr.html).
 
 # Missing features
 The following features are currently missing and would be straightforward additions to later versions of the library:
 - Support for `char` literals
 - Support for float literals (_Requires some extra work since floats are not yet supported in generic const contexts._)
-- Support for raw byte str literals (_Requires a similar abstraction as [TypeStr]._)
+- Support for raw byte str literals (_Requires a similar abstraction as [TypeStr](https://docs.rs/overloaded_literals/latest/overloaded_literals/type_str/trait.TypeStr.html)._)
 - Implementations of `FromLiteralStr` for `CStr` and other `str`-like types.
