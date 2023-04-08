@@ -20,7 +20,7 @@ fn wrap_signed(unsigned_expr_lit: &ExprLit, span: Span) -> Option<syn::Expr> {
             }
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralSigned::<-#lit_int>::into_self() );
             Some(res)
-        },
+        }
         // ExprLit {
         //     attrs,
         //     lit: Lit::Float(lit_float),
@@ -61,7 +61,7 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
                 return Expr::Lit(expr_lit);
             }
             build_typestr(&lit_str.value(), span)
-        },
+        }
         ExprLit {
             attrs,
             lit: Lit::Bool(_),
@@ -71,7 +71,7 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             }
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralBool::<#expr_lit>::into_self());
             res
-        },
+        }
         //     res
         // },
         // ExprLit {
@@ -93,7 +93,8 @@ fn build_typestr(string: &str, span: Span) -> syn::Expr {
     for byte in string.as_bytes().iter().rev() {
         res = parse_quote_spanned!(span=> ::tlist::TCons<::overloaded_literals::type_str::Byte<#byte>, #res>);
     }
-    let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralStr::<#res>::into_self());
+    let res =
+        parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralStr::<#res>::into_self());
     res
 }
 
@@ -126,7 +127,7 @@ impl Fold for Args {
             Expr::Lit(expr_lit) => {
                 // Positive int or string literals are 'plain' Expr::Lit
                 wrap_unsigned_or_str(expr_lit, span)
-            },
+            }
             other => other,
         }
     }
@@ -139,7 +140,6 @@ pub fn overloaded_literals(_metadata: TokenStream, input: TokenStream) -> TokenS
     let output = args.fold_item_fn(input_fn);
     TokenStream::from(quote!(#output))
 }
-
 
 // These tests are mainly here for debugging;
 // They (only) ensure the happy path does not crash.
@@ -190,7 +190,6 @@ mod tests {
         let _out = args.fold_item_fn(input_fun);
         // println!("{:?}", out)
     }
-
 
     // #[test]
     // fn float_example() {

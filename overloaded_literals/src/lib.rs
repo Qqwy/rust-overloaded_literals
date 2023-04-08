@@ -8,9 +8,9 @@ use std::println;
 
 extern crate self as overloaded_literals;
 pub mod type_str;
-use core::num::{NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize};
-use core::num::{NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize};
 use core::num::Wrapping;
+use core::num::{NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize};
+use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
 
 pub use type_str::TypeStr;
 
@@ -35,7 +35,6 @@ pub use type_str::TypeStr;
 /// - Any *unsigned* integer literal like `-4200` is rewritten to [`FromLiteralSigned::<-4200>::into_self()`](FromLiteralSigned)
 /// - Any `str` literal like `"hello"` is rewritten to [`FromLiteralStr::<"hello">::into_self()`](FromLiteralStr)
 pub use overloaded_literals_macro::overloaded_literals;
-
 
 mod sealed {
     pub trait Sealed {}
@@ -155,7 +154,6 @@ impl<'a, Str: TypeStr> FromLiteralStr<Str> for &'a str {
 //     }
 // }
 
-
 /// Build your datatype from an unsigned integer literal (0, 1, 2, 3, ...).
 ///
 /// The [macro@overloaded_literals] macro turns unsigned integer literals like
@@ -270,9 +268,8 @@ macro_rules! unsigned_impl {
                 <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as $type
             }
         }
-    }
+    };
 }
-
 
 macro_rules! signed_impl {
     ($type:ty) => {
@@ -290,7 +287,7 @@ macro_rules! signed_impl {
                 <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as $type
             }
         }
-    }
+    };
 }
 
 unsigned_impl!(u8);
@@ -299,7 +296,6 @@ unsigned_impl!(u32);
 unsigned_impl!(u64);
 unsigned_impl!(u128);
 unsigned_impl!(usize);
-
 
 unsigned_impl!(i8);
 unsigned_impl!(i16);
@@ -314,7 +310,6 @@ signed_impl!(i32);
 signed_impl!(i64);
 signed_impl!(i128);
 signed_impl!(isize);
-
 
 macro_rules! nonzero_unsigned_impl {
     ($type:ty, $orig_type:ty) => {
@@ -336,7 +331,7 @@ macro_rules! nonzero_unsigned_impl {
                 unsafe { <$type>::new_unchecked(raw) }
             }
         }
-    }
+    };
 }
 
 macro_rules! nonzero_signed_impl {
@@ -360,7 +355,7 @@ macro_rules! nonzero_signed_impl {
                 unsafe { <$type>::new_unchecked(raw) }
             }
         }
-    }
+    };
 }
 
 nonzero_unsigned_impl!(NonZeroU8, u8);
@@ -383,16 +378,14 @@ nonzero_signed_impl!(NonZeroI64, i64);
 nonzero_signed_impl!(NonZeroI128, i128);
 nonzero_signed_impl!(NonZeroIsize, isize);
 
-impl<T: FromLiteralUnsigned<LIT>, const LIT: u128> FromLiteralUnsigned<LIT> for Wrapping<T>
-{
+impl<T: FromLiteralUnsigned<LIT>, const LIT: u128> FromLiteralUnsigned<LIT> for Wrapping<T> {
     const VALID_LITERAL: u128 = T::VALID_LITERAL;
     fn into_self() -> Self {
         Wrapping(T::into_self())
     }
 }
 
-impl<T: FromLiteralSigned<LIT>, const LIT: i128> FromLiteralSigned<LIT> for Wrapping<T>
-{
+impl<T: FromLiteralSigned<LIT>, const LIT: i128> FromLiteralSigned<LIT> for Wrapping<T> {
     const VALID_LITERAL: i128 = T::VALID_LITERAL;
     fn into_self() -> Self {
         Wrapping(T::into_self())
@@ -478,13 +471,10 @@ impl<const LIT: bool> FromLiteralBool<LIT> for bool {
 //     fn into_self() -> Self;
 // }
 
-
-
 // unsigned_impl!(NonZeroU16);
 // unsigned_impl!(NonZeroU32);
 // unsigned_impl!(NonZeroU64);
 // unsigned_impl!(NonZeroUsize);
-
 
 // use core::ffi::CStr;
 // impl<Str: TypeStr> FromLiteralStr<Str> for &'static CStr {
@@ -561,7 +551,6 @@ mod tests {
         println!("greeting: {y:?}");
     }
 }
-
 
 // #[overloaded_literals]
 // fn bar() {
