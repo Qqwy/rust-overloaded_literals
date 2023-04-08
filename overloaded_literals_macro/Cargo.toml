@@ -1,14 +1,15 @@
 [package]
 name = "overloaded_literals_macro"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
+
 description = "Internal proc-macro implementation crate for the overloaded_literals crate."
 repository = "https://github.com/Qqwy/rust-overloaded_literals"
 readme = "README.md"
 authors = ["Qqwy / Marten"]
 exclude = []
 license = "MIT OR Apache-2.0"
-keywords = ["generic", "literals", "macros", "no_std", "overloading"]
+keywords = ["const", "generic", "literals", "no_std", "overloading"]
 categories = ["development-tools", "rust-patterns", "no-std", "no-std::no-alloc", "data-structures"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
