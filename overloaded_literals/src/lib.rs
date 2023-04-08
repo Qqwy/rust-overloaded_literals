@@ -3,7 +3,7 @@ pub mod type_str;
 use std::num::{NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize};
 use std::num::{NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize};
 
-use type_str::TypeStr;
+pub use type_str::TypeStr;
 
 /// Attribute macro to overload literals in the function it is used on.
 ///
@@ -61,7 +61,46 @@ mod sealed {
 ///                                          runtime
 /// ```
 ///
+/// # Example
+/// As an example, consider a simple enum, whose valid values are `"hello"` and `"goodbye".`
+/// Since the amount of builtin const operations that are allowed on `str` is currently limited on stable rust,
+/// we use the `const_str` crate for these.
+/// ```rust
+/// use overloaded_literals::{overloaded_literals, FromLiteralStr, TypeStr};
+/// #[derive(Debug, Clone, PartialEq, Eq)]
+/// pub enum Greeting {
+///     Hello,
+///     Goodbye,
+/// }
 ///
+/// impl<Str: TypeStr> FromLiteralStr<Str> for Greeting
+/// {
+///     const VALID_LITERAL: &'static str = {
+///         let val = Str::STR;
+///         if const_str::equal!(val, "hello") || const_str::equal!(val, "goodbye") {
+///             val
+///         } else {
+///             panic!("Invalid Greeting literal; only `hello` and `goodbye` are allowed.");
+///         }
+///     };
+///
+///     fn into_self() -> Self {
+///         let string = <Self as FromLiteralStr<Str>>::VALID_LITERAL;
+///         match string {
+///             "hello" => Greeting::Hello,
+///             "goodbye" => Greeting::Goodbye,
+///             _ => unreachable!(),
+///         }
+///     }
+/// }
+/// // Usage:
+/// #[overloaded_literals]
+/// fn example() {
+///    let val: Greeting = "hello";
+///    let other_val: Greeting = "goodbye";
+///    // let boom: Greeting = "hehehehehe"; // <- This would cause a compile error :-)
+/// }
+/// ```
 pub trait FromLiteralStr<TStr: TypeStr> {
     /// The definition of `VALID_LITERAL` is evaluated at compile-time.
     ///
@@ -341,11 +380,12 @@ pub enum Greeting {
     Hello,
     Goodbye,
 }
+
 impl<Str: TypeStr> FromLiteralStr<Str> for Greeting
 {
     const VALID_LITERAL: &'static str = {
         let val = Str::STR;
-        if const_str_eq(val, "hello") || const_str_eq(val, "goodbye") {
+        if const_str::equal!(val, "hello") || const_str::equal!(val, "goodbye") {
             val
         } else {
             panic!("Invalid Greeting literal");
@@ -362,22 +402,43 @@ impl<Str: TypeStr> FromLiteralStr<Str> for Greeting
     }
 }
 
-const fn const_str_eq(lhs: &str, rhs: &str) -> bool {
-    if lhs.len() != rhs.len() {
-        return false;
-    }
-    let len = lhs.len();
-    let lhs_bytes = lhs.as_bytes();
-    let rhs_bytes = rhs.as_bytes();
-    let mut index = 0;
-    while index < len {
-        if lhs_bytes[index] != rhs_bytes[index] {
-            return false;
-        }
-        index += 1;
-    }
-    true
-}
+// use core::ffi::CStr;
+// impl<Str: TypeStr> FromLiteralStr<Str> for &'static CStr {
+//     const VALID_LITERAL: &'static str = {
+//         let val = Str::STR;
+//         let val_start = &val.as_bytes()[0..10];
+//         // let penultimate = val.len() - 1;
+//         if const_str::contains!(val, '\0') {
+//             panic!("Invalid CStr literal: Contains NUL bytes in the middle.")
+//         }
+//         // if val.as_bytes()[val.len() - 1] != 0 {
+//         if !const_str::ends_with!(val, '\0') {
+//             panic!("Invalid CStr literal: Missing terminating NUL byte.")
+//         }
+//         val
+//     };
+//     fn into_self() -> Self {
+//         let lit = <Self as FromLiteralStr<Str>>::VALID_LITERAL;
+//         unsafe { CStr::from_bytes_with_nul_unchecked(lit.as_bytes()) }
+//     }
+// }
+
+// const fn const_str_eq(lhs: &str, rhs: &str) -> bool {
+//     if lhs.len() != rhs.len() {
+//         return false;
+//     }
+//     let len = lhs.len();
+//     let lhs_bytes = lhs.as_bytes();
+//     let rhs_bytes = rhs.as_bytes();
+//     let mut index = 0;
+//     while index < len {
+//         if lhs_bytes[index] != rhs_bytes[index] {
+//             return false;
+//         }
+//         index += 1;
+//     }
+//     true
+// }
 
 #[cfg(test)]
 mod tests {
@@ -436,6 +497,8 @@ pub fn nonzero_example() {
     // let x: NonZeroI8 = 0;
     // println!("{:?}", x);
 }
+
+
 fn foo(val: NonZeroI8) -> NonZeroI8 {
     val
 }
