@@ -104,7 +104,7 @@
 //! Another full example, on how to accept a `str` literal for your datatype, can be found in the documentation of  [FromLiteralStr].
 //!
 //! # Missing features
-//! The following features are currently missing and would be obvious additions to later versions of the library:
+//! The following features are currently missing and would be straightforward additions to later versions of the library:
 //! - Support for `bool` literals
 //! - Support for `char` literals
 //! - Support for float literals (_Requires some extra work since floats are not yet supported in generic const contexts._)
@@ -510,6 +510,61 @@ impl<T: FromLiteralSigned<LIT>, const LIT: i128> FromLiteralSigned<LIT> for Wrap
     }
 }
 
+/// Build your datatype from a boolean literal (`false` or `true`).
+///
+/// The [macro@overloaded_literals] macro turns boolean literals like
+/// ```compile_only
+/// true
+/// ```
+/// into calls to
+///
+/// ```compile_only
+/// FromLiteralBool::<true>::VALID_LITERAL::into_self()
+/// ```
+///
+///
+/// The first part (`VALID_LITERAL`) runs at compile-time, allowing you to perform input checks,
+/// where invalid input results in a compile error.
+///
+/// The second part (`into_self()`) runs at runtime, and is where you create your actual value,
+/// knowing that the input is guaranteed to be valid.
+///
+/// ```txt
+/// FromLiteralBool::<true>::VALID_LITERAL.into_self()
+/// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+///               compile time             ^^^^^^^^^^^
+///                                          runtime
+/// ```
+///
+pub trait FromLiteralBool<const LIT: bool> {
+    /// The definition of `VALID_LITERAL` is evaluated at compile-time.
+    ///
+    /// Inside this definition you have access to `LIT`.
+    ///
+    /// An implementation of `VALID_LITERAL` should perform input checking:
+    /// - If the input is valid, return `LIT` unchanged.
+    /// - If the input is invalid, [panic](core::panic!).
+    ///   Because this is evaluated at compile-time, this results in a compile error.
+    const VALID_LITERAL: bool;
+
+    /// Turns a [VALID_LITERAL](FromLiteralBool::VALID_LITERAL) into the actual runtime value.
+    ///
+    /// This part runs at runtime.
+    ///
+    /// You have access to [VALID_LITERAL](FromLiteralBool::VALID_LITERAL) (using the syntax `let val = <Self as FromLiteralBool<LIT>>::VALID_LITERAL;`),
+    /// and should turn it into your desired value.
+    ///
+    /// If you want, you can use an unsafe 'unchecked' constructor, if one exists, since you have done any validation already.
+    /// (But even if using a normal constructor, in all likelyhood the compiler is smart enough to remove the duplicate checks since the input is a literal value.)
+    fn into_self() -> Self;
+}
+
+impl<const LIT: bool> FromLiteralBool<LIT> for bool {
+    const VALID_LITERAL: bool = LIT;
+    fn into_self() -> Self {
+        <Self as FromLiteralBool<LIT>>::VALID_LITERAL
+    }
+}
 
 // pub trait FromLiteralFloat<const LIT: f64> {
 //     /// The definition of `VALID_LITERAL` is evaluated at compile-time.
@@ -619,8 +674,8 @@ mod tests {
 }
 
 
-#[overloaded_literals]
-fn bar() {
-    let res: (f32, f32, f32) = (1.0, -42.0, 10e3.0);
-    res
-}
+// #[overloaded_literals]
+// fn bar() {
+//     let res: (f32, f32, f32) = (1.0, -42.0, 10e3.0);
+//     res
+// }

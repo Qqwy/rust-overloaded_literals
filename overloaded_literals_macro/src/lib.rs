@@ -61,6 +61,18 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             }
             build_typestr(&lit_str.value(), span)
         },
+        ExprLit {
+            attrs,
+            lit: Lit::Bool(_),
+        } => {
+            if !attrs.is_empty() {
+                return Expr::Lit(expr_lit);
+            }
+            let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralBool::<#expr_lit>::into_self());
+            res
+        },
+        //     res
+        // },
         // ExprLit {
         //     attrs,
         //     lit: Lit::Float(_lit_float),
