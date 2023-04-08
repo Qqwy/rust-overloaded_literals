@@ -267,7 +267,7 @@ impl<'a, Str: TypeStr> FromLiteralStr<Str> for &'a str {
 // }
 
 
-/// Build your datatype from an unsigned integer literal.
+/// Build your datatype from an unsigned integer literal (0, 1, 2, 3, ...).
 ///
 /// The [macro@overloaded_literals] macro turns unsigned integer literals like
 /// ```compile_only
@@ -315,7 +315,7 @@ pub trait FromLiteralUnsigned<const LIT: u128> {
     fn into_self() -> Self;
 }
 
-/// Build your datatype from a signed integer literal.
+/// Build your datatype from a signed integer literal (-1, -2, -3, ...).
 ///
 /// The [macro@overloaded_literals] macro turns signed integer literals like
 /// ```compile_only
