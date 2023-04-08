@@ -2,7 +2,7 @@
 //!
 //! # Features
 //! - Compile-time validation of literals
-//!   - Supports signed and unsigned integers and `&'static str`.
+//!   - Supports `bool`, signed and unsigned integers and `&'static str`.
 //! - Construct your types without ceremony or boilerplate.
 //! - 100% `no_std` compatible.
 //! - Runs on stable rust. MSRV: 1.65.0
@@ -105,7 +105,6 @@
 //!
 //! # Missing features
 //! The following features are currently missing and would be straightforward additions to later versions of the library:
-//! - Support for `bool` literals
 //! - Support for `char` literals
 //! - Support for float literals (_Requires some extra work since floats are not yet supported in generic const contexts._)
 //! - Support for raw byte str literals (_Requires a similar abstraction as [TypeStr]._)
