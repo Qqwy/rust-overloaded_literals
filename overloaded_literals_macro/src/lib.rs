@@ -98,10 +98,12 @@ fn build_typestr(string: &str, span: Span) -> syn::Expr {
 
 impl Fold for Args {
     // We fold at the level of `Expr` because when we change a literal, the result will be an `Expr`.
-    fn fold_expr(&mut self, i: syn::Expr) -> syn::Expr {
-        let span = i.span();
-        let f = self;
-        match i {
+    fn fold_expr(&mut self, expr: syn::Expr) -> syn::Expr {
+        // Needed since we want to traverse bottom-up and leave all other nodes intact:
+        let expr = syn::fold::fold_expr(self, expr);
+
+        let span = expr.span();
+        match expr {
             // Negative int literals are represented as Expr::Unary(UnOp::Neg, Expr::Lit(...))
             Expr::Unary(ExprUnary {
                 attrs,
@@ -116,7 +118,7 @@ impl Fold for Args {
                     })
                 }),
                 _ => {
-                    let expr = Box::new(f.fold_expr(*boxed_expr));
+                    let expr = Box::new(self.fold_expr(*boxed_expr));
                     Expr::Unary(ExprUnary { attrs, op, expr })
                 }
             },
@@ -124,49 +126,6 @@ impl Fold for Args {
                 // Positive int or string literals are 'plain' Expr::Lit
                 wrap_unsigned_or_str(expr_lit, span)
             },
-            // We do not change any other type of expression,
-            // but need to recurse into them.
-            //
-            // These clauses are copied over from the default implementation of `Fold::fold_expr`:
-            Expr::Array(_binding_0) => Expr::Array(f.fold_expr_array(_binding_0)),
-            Expr::Assign(_binding_0) => Expr::Assign(f.fold_expr_assign(_binding_0)),
-            Expr::Async(_binding_0) => Expr::Async(f.fold_expr_async(_binding_0)),
-            Expr::Await(_binding_0) => Expr::Await(f.fold_expr_await(_binding_0)),
-            Expr::Binary(_binding_0) => Expr::Binary(f.fold_expr_binary(_binding_0)),
-            Expr::Block(_binding_0) => Expr::Block(f.fold_expr_block(_binding_0)),
-            Expr::Break(_binding_0) => Expr::Break(f.fold_expr_break(_binding_0)),
-            Expr::Call(_binding_0) => Expr::Call(f.fold_expr_call(_binding_0)),
-            Expr::Cast(_binding_0) => Expr::Cast(f.fold_expr_cast(_binding_0)),
-            Expr::Closure(_binding_0) => Expr::Closure(f.fold_expr_closure(_binding_0)),
-            Expr::Const(_binding_0) => Expr::Const(f.fold_expr_const(_binding_0)),
-            Expr::Continue(_binding_0) => Expr::Continue(f.fold_expr_continue(_binding_0)),
-            Expr::Field(_binding_0) => Expr::Field(f.fold_expr_field(_binding_0)),
-            Expr::ForLoop(_binding_0) => Expr::ForLoop(f.fold_expr_for_loop(_binding_0)),
-            Expr::Group(_binding_0) => Expr::Group(f.fold_expr_group(_binding_0)),
-            Expr::If(_binding_0) => Expr::If(f.fold_expr_if(_binding_0)),
-            Expr::Index(_binding_0) => Expr::Index(f.fold_expr_index(_binding_0)),
-            Expr::Infer(_binding_0) => Expr::Infer(f.fold_expr_infer(_binding_0)),
-            Expr::Let(_binding_0) => Expr::Let(f.fold_expr_let(_binding_0)),
-            // Expr::Lit(_binding_0) => Expr::Lit(f.fold_expr_lit(_binding_0)), // <- This one we handle above
-            Expr::Loop(_binding_0) => Expr::Loop(f.fold_expr_loop(_binding_0)),
-            Expr::Macro(_binding_0) => Expr::Macro(f.fold_expr_macro(_binding_0)),
-            Expr::Match(_binding_0) => Expr::Match(f.fold_expr_match(_binding_0)),
-            Expr::MethodCall(_binding_0) => Expr::MethodCall(f.fold_expr_method_call(_binding_0)),
-            Expr::Paren(_binding_0) => Expr::Paren(f.fold_expr_paren(_binding_0)),
-            Expr::Path(_binding_0) => Expr::Path(f.fold_expr_path(_binding_0)),
-            Expr::Range(_binding_0) => Expr::Range(f.fold_expr_range(_binding_0)),
-            Expr::Reference(_binding_0) => Expr::Reference(f.fold_expr_reference(_binding_0)),
-            Expr::Repeat(_binding_0) => Expr::Repeat(f.fold_expr_repeat(_binding_0)),
-            Expr::Return(_binding_0) => Expr::Return(f.fold_expr_return(_binding_0)),
-            Expr::Struct(_binding_0) => Expr::Struct(f.fold_expr_struct(_binding_0)),
-            Expr::Try(_binding_0) => Expr::Try(f.fold_expr_try(_binding_0)),
-            Expr::TryBlock(_binding_0) => Expr::TryBlock(f.fold_expr_try_block(_binding_0)),
-            Expr::Tuple(_binding_0) => Expr::Tuple(f.fold_expr_tuple(_binding_0)),
-            Expr::Unary(_binding_0) => Expr::Unary(f.fold_expr_unary(_binding_0)),
-            Expr::Unsafe(_binding_0) => Expr::Unsafe(f.fold_expr_unsafe(_binding_0)),
-            Expr::Verbatim(_binding_0) => Expr::Verbatim(_binding_0),
-            Expr::While(_binding_0) => Expr::While(f.fold_expr_while(_binding_0)),
-            Expr::Yield(_binding_0) => Expr::Yield(f.fold_expr_yield(_binding_0)),
             other => other,
         }
     }
