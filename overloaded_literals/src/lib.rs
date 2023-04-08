@@ -1,71 +1,116 @@
+//! Overloaded Literals to construct your datatypes without boilerplate and with compile-time validation.
 //!
+//! # Features
+//! - Compile-time validation of literals
+//! - Construct your types without ceremony or boilerplate.
+//! - 100% `no_std` compatible.
+//! - Runs on stable rust. MSRV: 1.65.0
 //!
+//! # Usage
+//! Add the [macro@overloaded_literals] as attribute to a function.
+//! This will rewrite any literals to calls to a trait with the literal as generic const parameter.
+//! Because a trait is used, construction of any desired target type which implements the type happens automatically:
 //!
-//! # Example
-//! ## Usage
-//! ## Implementing the traits for your own types
-//! As an example, here are the trait implementations for `NonZeroU32`.
+//! ```rust
+//! use std::num::NonZeroI8;
+//! use overloaded_literals::overloaded_literals;
 //!
-//! ```compile_only
+//! #[overloaded_literals]
+//! fn example() {
+//!     let three: NonZeroI8 = 3;
+//!     let result = three.saturating_mul(2); // <- This '2' also turns into a `NonZero` automatically because of the signature of `saturating_mul`.
+//!     let six = 6; // <- And this '6' as well
+//!     assert_eq!(result, six);
+//! }
+//! example()
+//! ```
+//!
+//! Trait implementations can perform compile-time validation  (using 'const evaluation') on the passed literal.
+//! This means that invalid literals are rejected at compile-time with a descriptive error message:
+//!
+//! ```compile_fail
+//! use std::num::NonZeroI8;
+//! use overloaded_literals::overloaded_literals;
+//!
+//! #[overloaded_literals]
+//! fn mistake() -> NonZeroI8 {
+//!     let oops: NonZeroI8 = 0; // <- compile error 'NonZero integer literal was 0'.
+//!     oops.saturating_mul(2)
+//! }
+//! mistake();
+//! ```
+//!
+//! # Implementing the traits
+//! As an example, here are the trait implementations for a type `EvenI32` which ensures that the value it stores is even, similarly to how [NonZeroI32] ensures that the contained value is non-zero.
+//!
+//! ```rust
 //! use overloaded_literals::{overloaded_literals, FromLiteralUnsigned, FromLiteralSigned};
-//! use std::num::NonZeroI32;
+//!
+//! #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+//! pub struct EvenI32(i32);
+//!
+//! impl EvenI32 {
+//!     fn new(val: i32) -> Option<Self> {
+//!         if val % 2 != 0 {
+//!             None
+//!         } else {
+//!             Some(EvenI32(val))
+//!         }
+//!     }
+//! }
 //!
 //! // Called for 0 and positive literals:
-//! impl<const LIT: u128> FromLiteralUnsigned<LIT> for NonZeroI32 {
+//! impl<const LIT: u128> FromLiteralUnsigned<LIT> for EvenI32 {
 //!     const VALID_LITERAL: u128 = {
-//!         let max = i32::MAX as u128;
-//!         if LIT == 0 {
-//!             panic!("NonZero integer literal was 0")
-//!         }
-//!         if LIT > max {
-//!             panic!("Out of range NonZero integer literal")
+//!         if LIT % 2 != 0 {
+//!             panic!("Odd EvenI32 integer literal")
 //!         } else {
 //!             LIT
 //!         }
 //!     };
 //!     fn into_self() -> Self {
 //!         let raw = <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as i32;
-//!         // SAFETY: Bounds check happened at compile time
-//!         unsafe { NonzeroI32::new_unchecked(raw) }
+//!         EvenI32(raw)
 //!     }
 //! }
 //!
 //! // Called for negative literals:
-//! impl<const LIT: i128> FromLiteralSigned<LIT> for NonZeroI32 {
+//! impl<const LIT: i128> FromLiteralSigned<LIT> for EvenI32 {
 //!     const VALID_LITERAL: i128 = {
-//!         let min = i32::MIN as i128;
-//!         let max = i32::MAX as i128;
-//!         if LIT == 0 {
-//!             panic!("NonZero integer literal was 0")
-//!         }
-//!         if LIT < min || LIT > max {
-//!             panic!("Out of range NonZero integer literal")
+//!         if LIT % 2 != 0 {
+//!             panic!("Odd EvenI32 integer literal")
 //!         } else {
 //!             LIT
 //!         }
 //!     };
 //!     fn into_self() -> Self {
 //!         let raw = <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as i32;
-//!         // SAFETY: Bounds check happened at compile time
-//!         unsafe { NonZeroI32::new_unchecked(raw) }
+//!         EvenI32(raw)
 //!     }
 //! }
 //!
 //!
 //! #[overloaded_literals]
 //! fn example() {
-//!     let x: NonZeroI32 = 100;
-//!     // let y: NonZeroI32 = 0; // <- This would cause a compile error :-)
+//!     let x: EvenI32 = 100;
+//!     // let y: EvenI32 = 7; // <- This would cause a compile error :-)
 //! }
+//! example()
 //! ```
 //!
 //! Another full example, on how to accept a `str` literal for your datatype, can be found in the documentation of  [FromLiteralStr].
 //!
+#![no_std]
+
+#[cfg(test)]
+extern crate std;
+#[cfg(test)]
+use std::println;
 
 extern crate self as overloaded_literals;
 pub mod type_str;
-use std::num::{NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize};
-use std::num::{NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize};
+use core::num::{NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU128, NonZeroUsize};
+use core::num::{NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroIsize};
 
 pub use type_str::TypeStr;
 
@@ -73,9 +118,10 @@ pub use type_str::TypeStr;
 ///
 /// # Usage
 ///
-/// ```compile_only
+/// ```ignore
+/// use overloaded_literals::overloaded_literals;
 /// #[overloaded_literals]
-/// pub fn str_example() {
+/// pub fn example() {
 ///    let x: NonZeroU8 = 10;
 ///    println!("x is: {:?}", &x);
 ///    let y: NonZeroIsize = -42;
@@ -128,7 +174,7 @@ mod sealed {
 /// # Example
 /// As an example, consider a simple enum, whose valid values are `"hello"` and `"goodbye".`
 /// Since the amount of builtin const operations that are allowed on `str` is currently limited on stable rust,
-/// we use the [crate@const_str] crate for these.
+/// we use the [const_str](https://crates.io/crates/const-str) crate for these.
 /// ```rust
 /// use overloaded_literals::{overloaded_literals, FromLiteralStr, TypeStr};
 ///
@@ -165,6 +211,7 @@ mod sealed {
 ///    let other_val: Greeting = "goodbye";
 ///    // let boom: Greeting = "hehehehehe"; // <- This would cause a compile error :-)
 /// }
+/// example()
 /// ```
 pub trait FromLiteralStr<TStr: TypeStr> {
     /// The definition of `VALID_LITERAL` is evaluated at compile-time.
@@ -201,12 +248,12 @@ impl<'a, Str: TypeStr> FromLiteralStr<Str> for &'a str {
 }
 
 // Build owned strings directly from string literals
-impl<Str: TypeStr> FromLiteralStr<Str> for String {
-    const VALID_LITERAL: &'static str = Str::STR;
-    fn into_self() -> Self {
-        <Self as FromLiteralStr<Str>>::VALID_LITERAL.to_string()
-    }
-}
+// impl<Str: TypeStr> FromLiteralStr<Str> for String {
+//     const VALID_LITERAL: &'static str = Str::STR;
+//     fn into_self() -> Self {
+//         <Self as FromLiteralStr<Str>>::VALID_LITERAL.to_string()
+//     }
+// }
 
 
 /// Build your datatype from an unsigned integer literal.
@@ -268,6 +315,8 @@ pub trait FromLiteralUnsigned<const LIT: u128> {
 /// ```compile_only
 /// FromLiteralSigned::<-1234>::VALID_LITERAL::into_self()
 /// ```
+///
+/// **NOTE: In the common case where the target type also accepts 0 or positive integer literals, it should also implement [FromLiteralUnsigned].**
 ///
 /// The first part (`VALID_LITERAL`) runs at compile-time, allowing you to perform input checks,
 /// where invalid input results in a compile error.
