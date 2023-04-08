@@ -1,6 +1,6 @@
 [package]
 name = "overloaded_literals"
-version = "0.5.1"
+version = "0.5.2"
 edition = "2021"
 
 description = "Overloaded Literals to construct your datatypes without boilerplate and with compile-time validation"
