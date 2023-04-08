@@ -10,7 +10,7 @@ Overloaded Literals to construct your datatypes without boilerplate and with com
 Ships with implementations for `std`'s various [NonZero and Wrapping](https://doc.rust-lang.org/stable/std/num/index.html) structs
 
 # Usage
-Add the [overloaded_literals](https://docs.rs/overloaded_literals/latest/overloaded_literals/macro.overloaded_literals.html) as attribute to a function.
+Add the [overloaded_literals](https://docs.rs/overloaded_literals/latest/overloaded_literals/macro.overloaded_literals.html) attribute to a function.
 This will rewrite any literals to calls to a trait with the literal as generic const parameter.
 Because a trait is used, construction of any desired target type which implements the type happens automatically:
 
