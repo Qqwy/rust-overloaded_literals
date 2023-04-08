@@ -1,4 +1,4 @@
-# overloaded_literals &emsp; [![Latest Version]][crates.io] [![License]][license path] [![requires]][Rust]
+# overloaded_literals &emsp; [![Latest Version]][crates.io] [![License]][license path] [![requires]][Rust] [![tests_badge]][tests_url]
 
 [Latest Version]: https://img.shields.io/crates/v/overloaded_literals.svg
 [crates.io]: https://crates.io/crates/overloaded_literals
@@ -6,6 +6,8 @@
 [license path]: https://github.com/qqwy/rust-overloaded_literals/blob/main/LICENSE
 [requires]: https://img.shields.io/badge/rustc-1.65+-lightgray.svg
 [Rust]: https://rust-lang.org/
+[tests_badge]: https://github.com/Qqwy/rust-overloaded_literals/actions/workflows/tests.yml/badge.svg
+[tests_url]: https://github.com/Qqwy/rust-overloaded_literals/actions/workflows/tests.yml
 Overloaded Literals to construct your datatypes without boilerplate and with compile-time validation.
 
 # Features
