@@ -20,7 +20,7 @@ fn wrap_signed(unsigned_expr_lit: &ExprLit, span: Span) -> Option<syn::Expr> {
             }
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralSigned::<-#lit_int>::into_self() );
             Some(res)
-        },
+        }
         ExprLit {
             attrs,
             lit: Lit::Float(lit_float),
@@ -74,7 +74,7 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             }
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralBool::<#expr_lit>::into_self());
             res
-        },
+        }
         ExprLit {
             attrs,
             lit: Lit::Float(lit_float),
@@ -85,7 +85,7 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             let float_bits: u64 = lit_float.base10_parse::<f64>().unwrap().to_bits();
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<::overloaded_literals::type_float::Float<#float_bits>>::into_self());
             res
-        },
+        }
         other => Expr::Lit(other.clone()),
     }
 }

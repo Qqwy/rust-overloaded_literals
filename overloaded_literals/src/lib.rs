@@ -7,16 +7,15 @@ extern crate std;
 use std::println;
 
 extern crate self as overloaded_literals;
-pub mod type_str;
 pub mod type_float;
+pub mod type_str;
 
-pub use type_str::TypeStr;
 pub use type_float::TypeFloat;
+pub use type_str::TypeStr;
 
 use core::num::Wrapping;
 use core::num::{NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize};
 use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
-
 
 /// Attribute macro to overload literals in the function it is used on.
 ///

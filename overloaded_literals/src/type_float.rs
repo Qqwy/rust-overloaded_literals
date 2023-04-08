@@ -29,7 +29,5 @@ pub trait TypeFloat: Sealed {
 }
 
 impl<const FLOAT_BITS: u64> TypeFloat for Float<FLOAT_BITS> {
-    const FLOAT: f64 = {
-        unsafe { core::mem::transmute(FLOAT_BITS)}
-    };
+    const FLOAT: f64 = { unsafe { core::mem::transmute(FLOAT_BITS) } };
 }
