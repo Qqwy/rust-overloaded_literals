@@ -30,7 +30,7 @@ fn wrap_signed(unsigned_expr_lit: &ExprLit, span: Span) -> Option<syn::Expr> {
             }
             let float = lit_float.base10_parse::<f64>().unwrap();
             let float_bits: u64 = (-float).to_bits();
-            let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<#float_bits>::into_self());
+            let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<::overloaded_literals::type_float::Float<#float_bits>>::into_self());
             Some(res)
         }
 
@@ -83,7 +83,7 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
                 return Expr::Lit(expr_lit);
             }
             let float_bits: u64 = lit_float.base10_parse::<f64>().unwrap().to_bits();
-            let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<#float_bits>::into_self());
+            let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralFloat::<::overloaded_literals::type_float::Float<#float_bits>>::into_self());
             res
         },
         other => Expr::Lit(other.clone()),
@@ -104,7 +104,7 @@ impl Fold for Args {
     // We fold at the level of `Expr` because when we change a literal, the result will be an `Expr`.
     fn fold_expr(&mut self, expr: syn::Expr) -> syn::Expr {
         // Needed since we want to traverse bottom-up and leave all other nodes intact:
-        let expr = syn::fold::fold_expr(self, expr);
+        // let expr = syn::fold::fold_expr(self, expr);
 
         let span = expr.span();
         match expr {
@@ -130,7 +130,7 @@ impl Fold for Args {
                 // Positive int or string literals are 'plain' Expr::Lit
                 wrap_unsigned_or_str(expr_lit, span)
             }
-            other => other,
+            other => syn::fold::fold_expr(self, other),
         }
     }
 }

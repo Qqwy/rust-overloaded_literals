@@ -1,6 +1,6 @@
 [package]
 name = "overloaded_literals"
-version = "0.5.2"
+version = "0.6.0"
 edition = "2021"
 
 description = "Overloaded Literals to construct your datatypes without boilerplate and with compile-time validation"
@@ -15,10 +15,8 @@ categories = ["development-tools", "rust-patterns", "no-std", "no-std::no-alloc"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# const_format = "0.2.30"
+overloaded_literals_macro = { version = "0.6.0", path = "../overloaded_literals_macro" }
 tlist = "0.6.2"
-overloaded_literals_macro = { version = "0.5.0", path = "../overloaded_literals_macro" }
-# proc-macro2 = "1.0.56"
 typenum = "1.16.0"
 
 [dev-dependencies]

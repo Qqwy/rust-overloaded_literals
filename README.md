@@ -12,7 +12,7 @@ Overloaded Literals to construct your datatypes without boilerplate and with com
 
 # Features
 - Compile-time validation of literals
-  - Supports `bool`, signed and unsigned integers and `&'static str`.
+  - Supports `bool`, signed and unsigned integers, floats and `&'static str`.
 - Construct your types without ceremony or boilerplate.
 - 100% `no_std` compatible.
 - Runs on stable rust. MSRV: 1.65.0
@@ -116,6 +116,5 @@ Another full example, on how to accept a `str` literal for your datatype, can be
 # Missing features
 The following features are currently missing and would be straightforward additions to later versions of the library:
 - Support for `char` literals
-- Support for float literals (_Requires some extra work since floats are not yet supported in generic const contexts._)
 - Support for raw byte str literals (_Requires a similar abstraction as [TypeStr](https://docs.rs/overloaded_literals/latest/overloaded_literals/type_str/trait.TypeStr.html)._)
 - Implementations of `FromLiteralStr` for `CStr` and other `str`-like types.

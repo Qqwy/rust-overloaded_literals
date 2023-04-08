@@ -593,8 +593,9 @@ mod tests {
     }
 }
 
-#[overloaded_literals]
-fn bar() -> f32 {
-    let res: (f32, f32, f64) = (1.0, -42.0, 10.0e3);
-    res.0
-}
+// #[overloaded_literals]
+// pub fn bar(val: f32) -> f32 {
+//     // let res: (f32, f64) = (1.0, 2.0e3);
+//     let res: (f32, f32, f64, f32) = (1.0, -42.0, 10.0e3, val);
+//     res.1
+// }
