@@ -17,7 +17,7 @@ Overloaded Literals to construct your datatypes without boilerplate and with com
 - 100% `no_std` compatible.
 - Runs on stable rust. MSRV: 1.65.0
 
-Ships with implementations for `std`'s various [NonZero and Wrapping](https://doc.rust-lang.org/stable/std/num/index.html) structs
+Ships with implementations for `std`'s various [NonZero and Wrapping](https://doc.rust-lang.org/stable/std/num/index.html) structs and [CStr](https://doc.rust-lang.org/stable/std/ffi/struct.CStr.html).
 
 # Usage
 Add the [overloaded_literals](https://docs.rs/overloaded_literals/latest/overloaded_literals/macro.overloaded_literals.html) attribute to a function.
@@ -117,4 +117,3 @@ Another full example, on how to accept a `str` literal for your datatype, can be
 The following features are currently missing and would be straightforward additions to later versions of the library:
 - Support for `char` literals
 - Support for raw byte str literals (_Requires a similar abstraction as [TypeStr](https://docs.rs/overloaded_literals/latest/overloaded_literals/type_str/trait.TypeStr.html)._)
-- Implementations of `FromLiteralStr` for `CStr` and other `str`-like types.

@@ -3,6 +3,7 @@
 
 #[cfg(test)]
 extern crate std;
+use core::ffi::CStr;
 #[cfg(test)]
 use std::println;
 
@@ -115,6 +116,8 @@ mod sealed {
 /// }
 /// example()
 /// ```
+///
+/// Another good example is [the implementation for CStr](#impl-FromLiteralStr<TStr>-for-%26%27static%20CStr) which is included with the library.
 pub trait FromLiteralStr<TStr: TypeStr> {
     /// The definition of `VALID_LITERAL` is evaluated at compile-time.
     ///
@@ -488,6 +491,66 @@ impl<TFloat: TypeFloat> FromLiteralFloat<TFloat> for f32 {
     }
 }
 
+/// Implementation to create a  `&'static CStr` from a string literal.
+/// Requires the given string literal to be:
+/// - nul terminated
+/// - not contain any nul characters in the middle
+///
+/// ```compile_fail
+/// # use overloaded_literals::overloaded_literals;
+/// # use core::ffi::CStr;
+///
+/// #[overloaded_literals]
+/// pub fn oops_not_null_terminated() {
+///    let x: &CStr = "Apple";
+///    println!("{:?}", x);
+/// }
+/// oops_not_null_terminated()
+/// ```
+///
+/// ```compile_fail
+/// # use overloaded_literals::overloaded_literals;
+/// # use core::ffi::CStr;
+///
+/// #[overloaded_literals]
+/// pub fn oops_nul_in_the_middle() {
+///    let x: &CStr = "Ba\0nana\0";
+///    println!("{:?}", x);
+/// }
+/// oops_nul_in_the_middle()
+/// ```
+///
+/// ```rust
+/// # use overloaded_literals::overloaded_literals;
+/// # use core::ffi::CStr;
+///
+/// #[overloaded_literals]
+/// pub fn correct() {
+///    let x: &CStr = "Dragon fruit\0";
+///    println!("{:?}", x);
+/// }
+/// correct()
+/// ```
+impl <TStr: TypeStr> FromLiteralStr<TStr> for &'static CStr {
+    const VALID_LITERAL: &'static str = {
+        let bytes = TStr::STR.as_bytes();
+        let mut i = 0;
+        while i < bytes.len() - 1 {
+            assert!(bytes[i] != 0, "CStr cannot have nul bytes in the middle");
+            i += 1;
+        }
+        assert!(bytes[bytes.len() - 1] == 0, "nul-terminator missing for CStr");
+        TStr::STR
+    };
+
+    fn into_self() -> Self {
+        let bytes = <Self as FromLiteralStr<TStr>>::VALID_LITERAL.as_bytes();
+        // SAFETY: VALID_LITERAL is checked at compile time
+        unsafe { CStr::from_bytes_with_nul_unchecked(bytes) }
+    }
+}
+
+
 // pub trait FromLiteralFloat<const LIT: f64> {
 //     /// The definition of `VALID_LITERAL` is evaluated at compile-time.
 //     ///
@@ -590,6 +653,15 @@ mod tests {
         >::into_self();
         println!("greeting: {y:?}");
     }
+
+
+    // #[test]
+    // #[overloaded_literals]
+    // pub fn cstr_example() {
+    //     let x: &CStr = "he\0llo";
+    //     let y: &CStr = "hello\0";
+    //     println!("{:?}", x);
+    // }
 }
 
 // #[overloaded_literals]
