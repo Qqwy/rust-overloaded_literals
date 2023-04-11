@@ -15,7 +15,6 @@ dependencies = [
  "const-str",
  "overloaded_literals_macro",
  "tlist",
- "typenum",
 ]
 
 [[package]]
@@ -46,9 +45,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.13"
+version = "2.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c9da457c5285ac1f936ebd076af6dac17a61cfe7826f2076b4d015cf47bc8ec"
+checksum = "fcf316d5356ed6847742d036f8a39c3b8435cac10bd528a4bd461928a6ab34d5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -57,18 +56,9 @@ dependencies = [
 
 [[package]]
 name = "tlist"
-version = "0.6.2"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d07d0bf0c2e3d80b823bdeed6ed3e3c4775665281cee97dd9daf6e081d029f9"
-dependencies = [
- "typenum",
-]
-
-[[package]]
-name = "typenum"
-version = "1.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
+checksum = "29f2f38a4c63f50b053d953f9736d58fc3336749447fbdaf77da2a9254bdeb4e"
 
 [[package]]
 name = "unicode-ident"

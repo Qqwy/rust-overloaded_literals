@@ -10,8 +10,7 @@
 //!
 //! The only API which can be considered public and is guaranteed, is [TypeStr::STR].
 use crate::sealed::Sealed;
-use tlist::{Len, TCons, TList, TNil};
-use typenum::Unsigned;
+use tlist::{TCons, TList, TNil};
 
 /// Struct to lift a single u8 byte to the type level.
 ///
@@ -70,8 +69,6 @@ pub const MAX_STR_LIT_LEN: usize = 32768;
 /// - Memory allocation is also of course not possible in const context.
 pub trait TypeStr: TList + Sealed {
     #[doc(hidden)]
-    const LEN: usize;
-    #[doc(hidden)]
     const V: [u8; MAX_STR_LIT_LEN];
 
     /// Turns the TypeStr into its const `&'static str` equivalent.
@@ -84,14 +81,12 @@ pub trait TypeStr: TList + Sealed {
 }
 
 impl TypeStr for TNil {
-    const LEN: usize = 0;
     const V: [u8; MAX_STR_LIT_LEN] = { [0; MAX_STR_LIT_LEN] };
 }
 
 impl<First: ContainsByte, Rest: TypeStr> TypeStr for TCons<First, Rest> {
-    const LEN: usize = Len::<Self>::USIZE;
     const V: [u8; MAX_STR_LIT_LEN] = {
-        assert!(Len::<Self>::USIZE <= MAX_STR_LIT_LEN);
+        assert!(Self::LEN <= MAX_STR_LIT_LEN);
 
         let first = First::BYTE;
         let first_elem_ptr = core::ptr::addr_of!(first);
@@ -110,7 +105,7 @@ impl<First: ContainsByte, Rest: TypeStr> TypeStr for TCons<First, Rest> {
         let target_ptr = unsafe { core::mem::transmute(core::ptr::addr_of!(arr) as *const u8) }; // <- Poor man's addr_of_mut!
 
         unsafe { core::ptr::copy_nonoverlapping(first_elem_ptr, target_ptr, 1) };
-        unsafe { core::ptr::copy_nonoverlapping(rest_ptr, target_ptr.add(1), Len::<Rest>::USIZE) };
+        unsafe { core::ptr::copy_nonoverlapping(rest_ptr, target_ptr.add(1), Rest::LEN) };
         arr
     };
 }
