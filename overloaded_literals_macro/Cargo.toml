@@ -1,6 +1,6 @@
 [package]
 name = "overloaded_literals_macro"
-version = "0.7.0"
+version = "0.7.1"
 edition = "2021"
 
 description = "Internal proc-macro implementation crate for the overloaded_literals crate."
@@ -16,7 +16,7 @@ categories = ["development-tools", "rust-patterns", "no-std", "no-std::no-alloc"
 
 [dependencies]
 quote = "1.0.26"
-syn = { version = "2.0.13", features = ["full", "fold", "extra-traits"] }
+syn = { version = "2.0.13", features = ["full", "fold"] }
 
 [lib]
 proc-macro = true
