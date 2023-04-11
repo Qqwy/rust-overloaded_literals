@@ -531,7 +531,7 @@ impl<TFloat: TypeFloat> FromLiteralFloat<TFloat> for f32 {
 /// }
 /// correct()
 /// ```
-impl <TStr: TypeStr> FromLiteralStr<TStr> for &'static CStr {
+impl<TStr: TypeStr> FromLiteralStr<TStr> for &'static CStr {
     const VALID_LITERAL: &'static str = {
         let bytes = TStr::STR.as_bytes();
         let mut i = 0;
@@ -539,7 +539,10 @@ impl <TStr: TypeStr> FromLiteralStr<TStr> for &'static CStr {
             assert!(bytes[i] != 0, "CStr cannot have nul bytes in the middle");
             i += 1;
         }
-        assert!(bytes[bytes.len() - 1] == 0, "nul-terminator missing for CStr");
+        assert!(
+            bytes[bytes.len() - 1] == 0,
+            "nul-terminator missing for CStr"
+        );
         TStr::STR
     };
 
@@ -549,7 +552,6 @@ impl <TStr: TypeStr> FromLiteralStr<TStr> for &'static CStr {
         unsafe { CStr::from_bytes_with_nul_unchecked(bytes) }
     }
 }
-
 
 // pub trait FromLiteralFloat<const LIT: f64> {
 //     /// The definition of `VALID_LITERAL` is evaluated at compile-time.
@@ -653,7 +655,6 @@ mod tests {
         >::into_self();
         println!("greeting: {y:?}");
     }
-
 
     // #[test]
     // #[overloaded_literals]
