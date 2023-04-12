@@ -1,4 +1,8 @@
-# 0.8.0 (unpublished)
+# 0.8.1
+
+- Fix syntax highlighting in README on crates.io page
+
+# 0.8.0
 
 - `FromLiteralStr` support for `core::ffi::CStr`.
 

@@ -41,7 +41,7 @@ example()
 Trait implementations can perform compile-time validation  (using 'const evaluation') on the passed literal.
 This means that invalid literals are rejected at compile-time with a descriptive error message:
 
-```compile_fail
+```rust compile_fail
 use std::num::NonZeroI8;
 use overloaded_literals::overloaded_literals;
 

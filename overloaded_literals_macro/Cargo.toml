@@ -1,6 +1,6 @@
 [package]
 name = "overloaded_literals_macro"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 
 description = "Internal proc-macro implementation crate for the overloaded_literals crate."
