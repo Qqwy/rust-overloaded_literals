@@ -1,6 +1,8 @@
 # HEAD
 
+Minor:
 - Improve in-lib implementations and example implementations to use `assert!` instead of `panic!` for extra clarity.
+- Add `#[inline]` decorations to all calls to `into_self()`. This is probably usually not necessary, but good style :-).
 
 # 0.8.1
 

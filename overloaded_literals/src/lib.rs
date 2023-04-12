@@ -144,6 +144,8 @@ pub trait FromLiteralStr<TStr: TypeStr> {
 // Base definition
 impl<'a, Str: TypeStr> FromLiteralStr<Str> for &'a str {
     const VALID_LITERAL: &'static str = Str::STR;
+
+    #[inline]
     fn into_self() -> Self {
         <Self as FromLiteralStr<Str>>::VALID_LITERAL
     }
@@ -264,6 +266,8 @@ macro_rules! unsigned_impl {
                 assert!(LIT >= min && LIT <= max, "Out of range integer literal");
                 LIT
             };
+
+            #[inline]
             fn into_self() -> Self {
                 <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as $type
             }
@@ -280,6 +284,8 @@ macro_rules! signed_impl {
                 assert!(LIT >= min && LIT <= max, "Out of range integer literal");
                 LIT
             };
+
+            #[inline]
             fn into_self() -> Self {
                 <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as $type
             }
@@ -317,6 +323,8 @@ macro_rules! nonzero_unsigned_impl {
                 assert!(LIT <= max, "Out of range NonZero integer literal");
                 LIT
             };
+
+            #[inline]
             fn into_self() -> Self {
                 let raw = <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as $orig_type;
                 // SAFETY: Bounds check happened at compile time
@@ -339,6 +347,8 @@ macro_rules! nonzero_signed_impl {
                 );
                 LIT
             };
+
+            #[inline]
             fn into_self() -> Self {
                 let raw = <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as $orig_type;
                 // SAFETY: Bounds check happened at compile time
@@ -370,6 +380,8 @@ nonzero_signed_impl!(NonZeroIsize, isize);
 
 impl<T: FromLiteralUnsigned<LIT>, const LIT: u128> FromLiteralUnsigned<LIT> for Wrapping<T> {
     const VALID_LITERAL: u128 = T::VALID_LITERAL;
+
+    #[inline]
     fn into_self() -> Self {
         Wrapping(T::into_self())
     }
@@ -377,6 +389,8 @@ impl<T: FromLiteralUnsigned<LIT>, const LIT: u128> FromLiteralUnsigned<LIT> for 
 
 impl<T: FromLiteralSigned<LIT>, const LIT: i128> FromLiteralSigned<LIT> for Wrapping<T> {
     const VALID_LITERAL: i128 = T::VALID_LITERAL;
+
+    #[inline]
     fn into_self() -> Self {
         Wrapping(T::into_self())
     }
@@ -433,6 +447,8 @@ pub trait FromLiteralBool<const LIT: bool> {
 
 impl<const LIT: bool> FromLiteralBool<LIT> for bool {
     const VALID_LITERAL: bool = LIT;
+
+    #[inline]
     fn into_self() -> Self {
         <Self as FromLiteralBool<LIT>>::VALID_LITERAL
     }
@@ -463,6 +479,8 @@ pub trait FromLiteralFloat<TFloat: TypeFloat> {
 
 impl<TFloat: TypeFloat> FromLiteralFloat<TFloat> for f64 {
     const VALID_LITERAL: f64 = TFloat::FLOAT;
+
+    #[inline]
     fn into_self() -> Self {
         <Self as FromLiteralFloat<TFloat>>::VALID_LITERAL
     }
@@ -470,6 +488,8 @@ impl<TFloat: TypeFloat> FromLiteralFloat<TFloat> for f64 {
 
 impl<TFloat: TypeFloat> FromLiteralFloat<TFloat> for f32 {
     const VALID_LITERAL: f64 = TFloat::FLOAT;
+
+    #[inline]
     fn into_self() -> Self {
         <Self as FromLiteralFloat<TFloat>>::VALID_LITERAL as f32
     }
@@ -530,6 +550,7 @@ impl<TStr: TypeStr> FromLiteralStr<TStr> for &'static CStr {
         TStr::STR
     };
 
+    #[inline]
     fn into_self() -> Self {
         let bytes = <Self as FromLiteralStr<TStr>>::VALID_LITERAL.as_bytes();
         // SAFETY: VALID_LITERAL is checked at compile time
