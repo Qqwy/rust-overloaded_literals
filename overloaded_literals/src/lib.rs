@@ -333,7 +333,10 @@ macro_rules! nonzero_signed_impl {
                 let min = <$orig_type>::MIN as i128;
                 let max = <$orig_type>::MAX as i128;
                 assert!(LIT != 0, "NonZero integer literal was 0");
-                assert!(LIT >= min && LIT <= max, "Out of range NonZero integer literal");
+                assert!(
+                    LIT >= min && LIT <= max,
+                    "Out of range NonZero integer literal"
+                );
                 LIT
             };
             fn into_self() -> Self {

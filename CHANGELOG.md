@@ -1,3 +1,7 @@
+# HEAD
+
+- Improve in-lib implementations and example implementations to use `assert!` instead of `panic!` for extra clarity.
+
 # 0.8.1
 
 - Fix syntax highlighting in README on crates.io page
