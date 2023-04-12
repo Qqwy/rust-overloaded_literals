@@ -1,8 +1,11 @@
-# HEAD
+# 0.8.2
 
 Minor:
 - Improve in-lib implementations and example implementations to use `assert!` instead of `panic!` for extra clarity.
 - Add `#[inline]` decorations to all calls to `into_self()`. This is probably usually not necessary, but good style :-).
+
+Fix:
+- Make sure suffixes of int/float literals are respected (overloading is only attempted on literals without a suffix)
 
 # 0.8.1
 

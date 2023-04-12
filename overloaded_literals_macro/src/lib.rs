@@ -18,6 +18,9 @@ fn wrap_signed(unsigned_expr_lit: &ExprLit, span: Span) -> Option<syn::Expr> {
             if !attrs.is_empty() {
                 return None;
             }
+            if lit_int.suffix() != "" {
+                return None;
+            }
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralSigned::<-#lit_int>::into_self() );
             Some(res)
         }
@@ -26,6 +29,9 @@ fn wrap_signed(unsigned_expr_lit: &ExprLit, span: Span) -> Option<syn::Expr> {
             lit: Lit::Float(lit_float),
         } => {
             if !attrs.is_empty() {
+                return None;
+            }
+            if lit_float.suffix() != "" {
                 return None;
             }
             let float = lit_float.base10_parse::<f64>().unwrap();
@@ -45,9 +51,12 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
     match &expr_lit {
         ExprLit {
             attrs,
-            lit: Lit::Int(_lit_int),
+            lit: Lit::Int(lit_int),
         } => {
             if !attrs.is_empty() {
+                return Expr::Lit(expr_lit);
+            }
+            if lit_int.suffix() != "" {
                 return Expr::Lit(expr_lit);
             }
             let res = parse_quote_spanned!(span=> ::overloaded_literals::FromLiteralUnsigned::<#expr_lit>::into_self());
@@ -80,6 +89,9 @@ fn wrap_unsigned_or_str(expr_lit: ExprLit, span: Span) -> syn::Expr {
             lit: Lit::Float(lit_float),
         } => {
             if !attrs.is_empty() {
+                return Expr::Lit(expr_lit);
+            }
+            if lit_float.suffix() != "" {
                 return Expr::Lit(expr_lit);
             }
             let float_bits: u64 = lit_float.base10_parse::<f64>().unwrap().to_bits();
