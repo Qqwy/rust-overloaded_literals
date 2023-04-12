@@ -91,11 +91,8 @@ mod sealed {
 /// {
 ///     const VALID_LITERAL: &'static str = {
 ///         let val = Str::STR;
-///         if const_str::equal!(val, "hello") || const_str::equal!(val, "goodbye") {
-///             val
-///         } else {
-///             panic!("Invalid Greeting literal; only `hello` and `goodbye` are allowed.");
-///         }
+///         assert!(const_str::equal!(val, "hello") || const_str::equal!(val, "goodbye"), "Invalid Greeting literal; only `hello` and `goodbye` are allowed.");
+///         val
 ///     };
 ///
 ///     fn into_self() -> Self {
@@ -264,11 +261,8 @@ macro_rules! unsigned_impl {
             const VALID_LITERAL: u128 = {
                 let min = <$type>::MIN as u128;
                 let max = <$type>::MAX as u128;
-                if LIT < min || LIT > max {
-                    panic!("Out of range integer literal")
-                } else {
-                    LIT
-                }
+                assert!(LIT >= min && LIT <= max, "Out of range integer literal");
+                LIT
             };
             fn into_self() -> Self {
                 <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as $type
@@ -283,11 +277,8 @@ macro_rules! signed_impl {
             const VALID_LITERAL: i128 = {
                 let min = <$type>::MIN as i128;
                 let max = <$type>::MAX as i128;
-                if LIT < min || LIT > max {
-                    panic!("Out of range integer literal")
-                } else {
-                    LIT
-                }
+                assert!(LIT >= min && LIT <= max, "Out of range integer literal");
+                LIT
             };
             fn into_self() -> Self {
                 <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as $type
@@ -322,14 +313,9 @@ macro_rules! nonzero_unsigned_impl {
         impl<const LIT: u128> FromLiteralUnsigned<LIT> for $type {
             const VALID_LITERAL: u128 = {
                 let max = <$orig_type>::MAX as u128;
-                if LIT == 0 {
-                    panic!("NonZero integer literal was 0")
-                }
-                if LIT > max {
-                    panic!("Out of range NonZero integer literal")
-                } else {
-                    LIT
-                }
+                assert!(LIT != 0, "NonZero integer literal was 0");
+                assert!(LIT <= max, "Out of range NonZero integer literal");
+                LIT
             };
             fn into_self() -> Self {
                 let raw = <Self as FromLiteralUnsigned<LIT>>::VALID_LITERAL as $orig_type;
@@ -346,14 +332,9 @@ macro_rules! nonzero_signed_impl {
             const VALID_LITERAL: i128 = {
                 let min = <$orig_type>::MIN as i128;
                 let max = <$orig_type>::MAX as i128;
-                if LIT == 0 {
-                    panic!("NonZero integer literal was 0")
-                }
-                if LIT < min || LIT > max {
-                    panic!("Out of range NonZero integer literal")
-                } else {
-                    LIT
-                }
+                assert!(LIT != 0, "NonZero integer literal was 0");
+                assert!(LIT >= min && LIT <= max, "Out of range NonZero integer literal");
+                LIT
             };
             fn into_self() -> Self {
                 let raw = <Self as FromLiteralSigned<LIT>>::VALID_LITERAL as $orig_type;
