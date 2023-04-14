@@ -1,3 +1,8 @@
+# HEAD
+
+Doc:
+- Fixed a typo in the documentation (PR [#1](https://github.com/Qqwy/rust-overloaded_literals/pull/1), thank you, @vortexofdoom!)
+
 # 0.8.2
 
 Minor:
