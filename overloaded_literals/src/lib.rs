@@ -36,7 +36,7 @@ use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZ
 /// ```
 ///
 /// - Any *unsigned* integer literal like `1337` is rewritten to [`FromLiteralUnsigned::<1337>::into_self()`](FromLiteralUnsigned)
-/// - Any *unsigned* integer literal like `-4200` is rewritten to [`FromLiteralSigned::<-4200>::into_self()`](FromLiteralSigned)
+/// - Any *signed* integer literal like `-4200` is rewritten to [`FromLiteralSigned::<-4200>::into_self()`](FromLiteralSigned)
 /// - Any `str` literal like `"hello"` is rewritten to [`FromLiteralStr::<"hello">::into_self()`](FromLiteralStr)
 pub use overloaded_literals_macro::overloaded_literals;
 
