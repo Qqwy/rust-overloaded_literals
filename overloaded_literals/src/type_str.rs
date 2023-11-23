@@ -88,24 +88,14 @@ impl<First: ContainsByte, Rest: TypeStr> TypeStr for TCons<First, Rest> {
     const V: [u8; MAX_STR_LIT_LEN] = {
         assert!(Self::LEN <= MAX_STR_LIT_LEN);
 
-        let first = First::BYTE;
-        let first_elem_ptr = core::ptr::addr_of!(first);
-
-        let rest = Rest::V;
-        let rest_ptr = core::ptr::addr_of!(rest) as *const u8;
-
-        // Conceptually, this is: `let mut arr = [0; MAX_STR_LIT_LEN]; let target_ptr = core::mem::addr_of_mut!(arr);`
-        // NOTE: **needs** to be mut because we build a *mut u8 pointer from it below.
-        // If it were not mut, we would trigger UB ('mutate data owned by an immutable binding').
-        // because *conceptually* we do a mutable borrow here.
-        // We emulate `addr_of_mut!` (which is blocked by the 'const_mut_refs' feature) using transmute.
-        // This goes [u8; MAX_STR_LIT_LEN] -> *const [u8; MAX_STR_LIT_LEN] -> *const u8 -> *mut u8
-        #[allow(unused_mut)]
         let mut arr: [u8; MAX_STR_LIT_LEN] = [0; MAX_STR_LIT_LEN];
-        let target_ptr = unsafe { core::mem::transmute(core::ptr::addr_of!(arr) as *const u8) }; // <- Poor man's addr_of_mut!
 
-        unsafe { core::ptr::copy_nonoverlapping(first_elem_ptr, target_ptr, 1) };
-        unsafe { core::ptr::copy_nonoverlapping(rest_ptr, target_ptr.add(1), Rest::LEN) };
+        arr[0] = First::BYTE;
+        let mut i = 0;
+        while i < Rest::LEN {
+            arr[i + 1] = Rest::V[i];
+            i += 1;
+        }
         arr
     };
 }
