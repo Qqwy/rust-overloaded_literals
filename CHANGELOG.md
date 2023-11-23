@@ -1,5 +1,10 @@
 # HEAD
 
+# 0.8.3
+
+Fix:
+- Soundness issue: "writing to addr_of!(arr) is UB" ([#2](https://github.com/Qqwy/rust-overloaded_literals/issues/2)), thank you, @RalfJung!
+
 Doc:
 - Fixed a typo in the documentation (PR [#1](https://github.com/Qqwy/rust-overloaded_literals/pull/1), thank you, @vortexofdoom!)
 
